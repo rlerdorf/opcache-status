@@ -241,9 +241,9 @@ set_text("memory");
 function set_text(t) {
   if(t=="memory") {
     d3.select("#stats").html(
-      "<table><tr><th style='background:#1f77b4;' align=right>Used</th><td align=right><?php echo number_format($mem['used_memory']/1024,0)?> kB</td></tr>"+
-      "<tr><th style='background:#aec7e8;' align=right>Free</th><td align=right><?php echo number_format($mem['free_memory']/1024,0)?> kB</td></tr>"+
-      "<tr><th style='background:#ff7f0e;' align=right>Wasted</th><td align=right><?php echo number_format($mem['wasted_memory']/1024,0)?> kB</td></tr>"+
+      "<table><tr><th style='background:#1f77b4;' align=right>Used</th><td align=right><?php echo size_for_humans($mem['used_memory'])?></td></tr>"+
+      "<tr><th style='background:#aec7e8;' align=right>Free</th><td align=right><?php echo size_for_humans($mem['free_memory'])?></td></tr>"+
+      "<tr><th style='background:#ff7f0e;' align=right>Wasted</th><td align=right><?php echo size_for_humans($mem['wasted_memory'])?></td></tr>"+
       "<tr><th style='background:#ff7f0e;'> </th><td align=right><?php echo number_format($mem['current_wasted_percentage'],2)?>%</td></tr></table>"
     );
   } else if(t=="keys") {
