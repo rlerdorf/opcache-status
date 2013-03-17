@@ -96,6 +96,22 @@ p.capitalize{
 }
 </style>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
+<script language="javascript">
+var hidden = {};
+function toggleVisible(head, row) {
+    if (!hidden[row]) {
+        d3.selectAll(row)
+            .transition().style('display', 'none');
+        hidden[row] = true;
+        d3.select(head).transition().style('color', '#ccc');
+    } else {
+        d3.selectAll(row)
+            .transition().style('display');
+        hidden[row] = false;
+        d3.select(head).transition().style('color', '#000');
+    }
+}
+</script>
 </head>
 <body>
   <h1>PHP <?= phpversion()?> OpCache <?= $config['version']['version']?></h1>
@@ -168,17 +184,19 @@ foreach($status['scripts'] as $key=>$data) {
 
 asort($dirs);
 
+$id = 1;
+
 foreach($dirs as $dir => $files) {
     $count = count($files);
     
     if ($count > 1) {
         echo "<tr>";
-        echo "<th colspan=\"3\">{$dir} ({$count} files)</th>";
+        echo "<th id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} files)</th>";
         echo "</tr>";    
     }
     
     foreach ($files as $file => $data) {
-        echo "<tr>";
+        echo "<tr id=\"row-{$id}\">";
         echo "<td>{$data["hits"]}</td>";
         echo "<td>" .size_for_humans($data["memory_consumption"]). "</td>";
         
@@ -188,6 +206,8 @@ foreach($dirs as $dir => $files) {
         
         echo "</tr>";
     }
+    
+    ++$id;
 }
 ?>
       </table>
