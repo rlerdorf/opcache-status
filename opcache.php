@@ -86,6 +86,10 @@ p.capitalize{
 .content table {
     width:100%;
 }
+.clickable {
+    cursor: hand; 
+    cursor: pointer; 
+}
 [type=radio]:checked ~ label{
     background: white;
     border-bottom:1px solid white;
@@ -191,7 +195,7 @@ foreach($dirs as $dir => $files) {
     
     if ($count > 1) {
         echo "<tr>";
-        echo "<th id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} files)</th>";
+        echo "<th class=\"clickable\" id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} files)</th>";
         echo "</tr>";    
     }
     
