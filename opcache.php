@@ -146,6 +146,9 @@ foreach($status['scripts'] as $key=>$data) {
     $dirs[dirname($key)][basename($key)]=$data;
 }
 
+/* any order will do */
+asort($dirs);
+
 foreach($dirs as $dir => $files) {
     $count = count($files);
     
