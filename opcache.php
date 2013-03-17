@@ -141,28 +141,36 @@ foreach($config['directives'] as $key=>$value) {
       <label for="tab-scripts">Scripts</label>
       <div class="content">
       <table style="font-size:0.8em;">
+      <tr>
+        <th>Hits</th>
+        <th>Memory</th>
+        <th>Path</th>
+      </tr>
 <?php
 foreach($status['scripts'] as $key=>$data) {
     $dirs[dirname($key)][basename($key)]=$data;
 }
 
-/* any order will do */
 asort($dirs);
 
 foreach($dirs as $dir => $files) {
     $count = count($files);
     
-    echo "<tr>";
-    echo "<th>Hits</th>";
-    echo "<th>Memory</th>";
-    echo "<th>{$dir} ({$count} files)</th>";
-    echo "</tr>";
+    if ($count > 1) {
+        echo "<tr>";
+        echo "<th colspan=\"3\">{$dir} ({$count} files)</th>";
+        echo "</tr>";    
+    }
     
     foreach ($files as $file => $data) {
         echo "<tr>";
         echo "<td>{$data["hits"]}</td>";
         echo "<td>{$data["memory_consumption"]}</td>";
-        echo "<td>{$file}</td>";
+        
+        if ($count > 1) {
+            echo "<td>{$file}</td>";
+        } else echo "<td>{$dir}/{$file}</td>";
+        
         echo "</tr>";
     }
 }
