@@ -44,16 +44,6 @@ return array (
       'last_used_timestamp' => 1363460627,
       'timestamp' => 1355102402,
     ),
-    '/var/www/scanmus/help.inc' => 
-    array (
-      'full_path' => '/var/www/scanmus/help.inc',
-      'hits' => 1,
-      'memory_consumption' => 1048,
-      'last_used' => 'Sat Mar 16 11:58:16 2013
-',
-      'last_used_timestamp' => 1363460296,
-      'timestamp' => 1220535312,
-    ),
     '/var/www/phpweb/include/languages.inc' => 
     array (
       'full_path' => '/var/www/phpweb/include/languages.inc',
@@ -74,46 +64,6 @@ return array (
       'last_used_timestamp' => 1363461391,
       'timestamp' => 1357938001,
     ),
-    '/var/www/scanmus/common.inc' => 
-    array (
-      'full_path' => '/var/www/scanmus/common.inc',
-      'hits' => 3,
-      'memory_consumption' => 68224,
-      'last_used' => 'Sat Mar 16 11:58:17 2013
-',
-      'last_used_timestamp' => 1363460297,
-      'timestamp' => 1263663868,
-    ),
-    '/var/www/scanmus/scanmus.inc' => 
-    array (
-      'full_path' => '/var/www/scanmus/scanmus.inc',
-      'hits' => 0,
-      'memory_consumption' => 264808,
-      'last_used' => 'Sat Mar 16 11:58:16 2013
-',
-      'last_used_timestamp' => 1363460296,
-      'timestamp' => 1333749692,
-    ),
-    '/var/www/scanmus/index.php' => 
-    array (
-      'full_path' => '/var/www/scanmus/index.php',
-      'hits' => 1,
-      'memory_consumption' => 62912,
-      'last_used' => 'Sat Mar 16 11:58:16 2013
-',
-      'last_used_timestamp' => 1363460296,
-      'timestamp' => 1308805144,
-    ),
-    '/var/www/scanmus/settings.inc' => 
-    array (
-      'full_path' => '/var/www/scanmus/settings.inc',
-      'hits' => 1,
-      'memory_consumption' => 3808,
-      'last_used' => 'Sat Mar 16 11:58:16 2013
-',
-      'last_used_timestamp' => 1363460296,
-      'timestamp' => 1220535404,
-    ),
     '/var/www/phpweb/manual/en/toc/getting-started.inc' => 
     array (
       'full_path' => '/var/www/phpweb/manual/en/toc/getting-started.inc',
@@ -133,16 +83,6 @@ return array (
 ',
       'last_used_timestamp' => 1363460775,
       'timestamp' => 1363345906,
-    ),
-    '/var/www/scanmus/ui.html' => 
-    array (
-      'full_path' => '/var/www/scanmus/ui.html',
-      'hits' => 1,
-      'memory_consumption' => 19072,
-      'last_used' => 'Sat Mar 16 11:58:16 2013
-',
-      'last_used_timestamp' => 1363460296,
-      'timestamp' => 1342715469,
     ),
     '/var/www/phpweb/include/footer.inc' => 
     array (
@@ -194,16 +134,6 @@ return array (
       'last_used_timestamp' => 1363461391,
       'timestamp' => 1356610801,
     ),
-    '/var/www/scanmus/api/db.inc' => 
-    array (
-      'full_path' => '/var/www/scanmus/api/db.inc',
-      'hits' => 3,
-      'memory_consumption' => 33880,
-      'last_used' => 'Sat Mar 16 11:58:17 2013
-',
-      'last_used_timestamp' => 1363460297,
-      'timestamp' => 1215555939,
-    ),
     '/var/www/phpweb/sites.php' => 
     array (
       'full_path' => '/var/www/phpweb/sites.php',
@@ -223,16 +153,6 @@ return array (
 ',
       'last_used_timestamp' => 1363461391,
       'timestamp' => 1347648005,
-    ),
-    '/var/www/scanmus/history.inc' => 
-    array (
-      'full_path' => '/var/www/scanmus/history.inc',
-      'hits' => 1,
-      'memory_consumption' => 880,
-      'last_used' => 'Sat Mar 16 11:58:16 2013
-',
-      'last_used_timestamp' => 1363460296,
-      'timestamp' => 1220535289,
     ),
     '/var/www/phpweb/manual/en/toc/langref.inc' => 
     array (
@@ -344,26 +264,6 @@ return array (
       'last_used_timestamp' => 1363461391,
       'timestamp' => 1363345831,
     ),
-    '/var/www/scanmus/templates.inc' => 
-    array (
-      'full_path' => '/var/www/scanmus/templates.inc',
-      'hits' => 1,
-      'memory_consumption' => 952,
-      'last_used' => 'Sat Mar 16 11:58:16 2013
-',
-      'last_used_timestamp' => 1363460296,
-      'timestamp' => 1220535413,
-    ),
-    '/var/www/scanmus/ext_tips.inc' => 
-    array (
-      'full_path' => '/var/www/scanmus/ext_tips.inc',
-      'hits' => 1,
-      'memory_consumption' => 704,
-      'last_used' => 'Sat Mar 16 11:58:16 2013
-',
-      'last_used_timestamp' => 1363460296,
-      'timestamp' => 1268750191,
-    ),
     '/var/www/phpweb/include/loadavg.inc' => 
     array (
       'full_path' => '/var/www/phpweb/include/loadavg.inc',
@@ -373,16 +273,6 @@ return array (
 ',
       'last_used_timestamp' => 1363461391,
       'timestamp' => 1354738801,
-    ),
-    '/var/www/scanmus/ext_explain.inc' => 
-    array (
-      'full_path' => '/var/www/scanmus/ext_explain.inc',
-      'hits' => 0,
-      'memory_consumption' => 5272,
-      'last_used' => 'Sat Mar 16 11:58:16 2013
-',
-      'last_used_timestamp' => 1363460296,
-      'timestamp' => 1270597124,
     ),
     '/var/www/phpweb/include/prepend.inc' => 
     array (
@@ -554,16 +444,6 @@ return array (
       'last_used_timestamp' => 1363461033,
       'timestamp' => 1354750802,
     ),
-    '/var/www/scanmus/tests.inc' => 
-    array (
-      'full_path' => '/var/www/scanmus/tests.inc',
-      'hits' => 0,
-      'memory_consumption' => 37872,
-      'last_used' => 'Sat Mar 16 11:58:16 2013
-',
-      'last_used_timestamp' => 1363460296,
-      'timestamp' => 1333749084,
-    ),
     '/var/www/phpweb/mailing-lists.php' => 
     array (
       'full_path' => '/var/www/phpweb/mailing-lists.php',
@@ -573,16 +453,6 @@ return array (
 ',
       'last_used_timestamp' => 1363460958,
       'timestamp' => 1361200802,
-    ),
-    '/var/www/scanmus/rpc.php' => 
-    array (
-      'full_path' => '/var/www/scanmus/rpc.php',
-      'hits' => 1,
-      'memory_consumption' => 40168,
-      'last_used' => 'Sat Mar 16 11:58:17 2013
-',
-      'last_used_timestamp' => 1363460297,
-      'timestamp' => 1220535359,
     ),
     '/var/www/phpweb/include/last_updated.inc' => 
     array (
