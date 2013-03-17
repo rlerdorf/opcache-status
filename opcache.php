@@ -13,7 +13,7 @@ function size_for_humans($bytes) {
     if ($bytes > 1048576) {
         return sprintf("%.2f MB", $bytes/1048576);
     } else if ($bytes > 1024) {
-        return sprintf("%.2f KB", $bytes/1024);
+        return sprintf("%.2f kB", $bytes/1024);
     } else return sprintf("%d bytes", $bytes);
 }
 ?>
@@ -140,6 +140,7 @@ foreach($status as $key=>$value) {
     foreach($value as $k=>$v) {
       if($v===false) $value = "false";
       if($v===true) $value = "true";
+      if($k=='used_memory' || $k=='free_memory' || $k == 'wasted_memory') $v = size_for_humans($v);
       if($k=='current_wasted_percentage' || $k=='opcache_hit_rate') $v = number_format($v,2).'%';
       if($k=='blacklist_miss_ratio') $v = number_format($v,2);
       echo "<tr><th align=\"left\">$k</th><td align=\"right\">$v</td></tr>\n";
@@ -164,6 +165,7 @@ foreach($status as $key=>$value) {
 foreach($config['directives'] as $key=>$value) {
   if($value===false) $value = "false";
   if($value===true) $value = "true";
+  if($key == 'opcache.memory_consumption') $value = size_for_humans($value);
   echo "<tr><th align=\"left\">$key</th><td align=\"right\">$value</td></tr>\n";
 }
 ?>
@@ -173,13 +175,13 @@ foreach($config['directives'] as $key=>$value) {
 
     <div class="tab">
       <input type="radio" id="tab-scripts" name="tab-group-1">
-      <label for="tab-scripts">Scripts</label>
+      <label for="tab-scripts">Scripts (<?=count($status["scripts"]); ?>)</label>
       <div class="content">
       <table style="font-size:0.8em;">
       <tr>
         <th width="10%">Hits</th>
-        <th width="15%">Memory</th>
-        <th width="75%">Path</th>
+        <th width="20%">Memory</th>
+        <th width="70%">Path</th>
       </tr>
 <?php
 foreach($status['scripts'] as $key=>$data) {
