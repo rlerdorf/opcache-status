@@ -1,3 +1,22 @@
+<?php
+/*
+* Fetch configuration and status information from OpCache
+*/
+$config = opcache_get_configuration();
+$status = opcache_get_status();
+
+/*
+* Turn bytes into a human readable format
+* @param $bytes
+*/
+function size_for_humans($bytes) {
+    if ($bytes > 1048576) {
+        return sprintf("%.2f MB", $bytes/1048576);
+    } else if ($bytes > 1024) {
+        return sprintf("%.2f KB", $bytes/1024);
+    } else return sprintf("%d bytes", $bytes);
+}
+?>
 <!DOCTYPE html>
 <meta charset="utf-8">
 <html><head>
@@ -78,10 +97,6 @@ p.capitalize{
 </style>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
 </head>
-<?php
-$config = opcache_get_configuration();
-$status = opcache_get_status();
-?>
 <body>
   <h1>PHP <?= phpversion()?> OpCache <?= $config['version']['version']?></h1>
   <form>
@@ -165,7 +180,7 @@ foreach($dirs as $dir => $files) {
     foreach ($files as $file => $data) {
         echo "<tr>";
         echo "<td>{$data["hits"]}</td>";
-        echo "<td>{$data["memory_consumption"]}</td>";
+        echo "<td>" .size_for_humans($data["memory_consumption"]). "</td>";
         
         if ($count > 1) {
             echo "<td>{$file}</td>";
