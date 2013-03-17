@@ -2,20 +2,79 @@
 <meta charset="utf-8">
 <html><head>
 <style>
-body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;margin:auto;position:relative;width:1024px;}
-text{font:10px sans-serif;}
-form{position: absolute;right:210px;top:50px;}
-#graph{position: absolute;right:0px;top:80px;}
-#stats{position: absolute;right:234px;top:240px;}
-tbody tr:nth-child(even) {background-color:#eee;}
-p.capitalize{text-transform:capitalize;}
-.tabs{position:relative;min-height:200px;clear:both;margin:25px 0;}
-.tab{float:left;}
-.tab label{background: #eee;padding:10px;border:1px solid #ccc;margin-left:-1px;position:relative;left:1px;}
-.tab [type=radio]{display: none;}
-.content{position:absolute;top:28px;left: 0;background:white;padding:20px;border:1px solid #ccc;height:500px;width:480px;overflow:auto;}
-[type=radio]:checked ~ label{background: white;border-bottom:1px solid white;z-index:2;}
-[type=radio]:checked ~ label ~ .content{z-index: 1;}
+body{
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    margin:auto;
+    position:relative;
+    width:1024px;
+}
+text{
+    font:10px sans-serif;
+}
+form{
+    position: absolute;
+    right:210px;
+    top:50px;
+}
+#graph{
+    position: absolute;
+    right:0px;
+    top:80px;
+}
+#stats{
+    position: absolute;
+    right:234px;
+    top:240px;
+}
+tbody tr:nth-child(even) {
+    background-color:#eee;
+}
+p.capitalize{
+    text-transform:capitalize;
+}
+.tabs{
+    position:relative;
+    min-height:200px;
+    clear:both;
+    margin:25px 0;
+}
+.tab{
+    float:left;
+}
+.tab label{
+    background: #eee;
+    padding:10px;
+    border:1px solid #ccc;
+    margin-left:-1px;
+    position:relative;
+    left:1px;
+}
+.tab [type=radio]{
+    display: none;
+}
+.content{
+    position:absolute;
+    top:28px;
+    left: 0;
+    background:white;
+    padding:20px;
+    border:1px solid #ccc;
+    height:500px;
+    width:480px;
+    overflow-y:auto;
+    overflow-x:hidden;
+}
+.content table {
+    width:100%;
+}
+[type=radio]:checked ~ label{
+    background: white;
+    border-bottom:1px solid white;
+    z-index:2;
+}
+[type=radio]:checked ~ label ~ .content{
+    z-index: 1;
+}
 </style>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
 </head>
@@ -82,19 +141,27 @@ foreach($config['directives'] as $key=>$value) {
       <label for="tab-scripts">Scripts</label>
       <div class="content">
       <table style="font-size:0.8em;">
-        <tr><th>Hits</th><th>Memory</th><th>Path</th></tr>
 <?php
-foreach($status['scripts'] as $key=>$value) {
-  echo "<tr>\n";
-  foreach($value as $k=>$v) {
-    if($k=='full_path') continue;
-    if($k=='last_used') continue;
-    if($k=='last_used_timestamp') continue;
-    if($k=='timestamp') continue;
-    echo "<td align=right>$v</td>";
-  }
-  echo "<th align=\"left\">$key</th>\n";
-  echo "</tr>\n";
+foreach($status['scripts'] as $key=>$data) {
+    $dirs[dirname($key)][basename($key)]=$data;
+}
+
+foreach($dirs as $dir => $files) {
+    $count = count($files);
+    
+    echo "<tr>";
+    echo "<th>Hits</th>";
+    echo "<th>Memory</th>";
+    echo "<th>{$dir} ({$count} files)</th>";
+    echo "</tr>";
+    
+    foreach ($files as $file => $data) {
+        echo "<tr>";
+        echo "<td>{$data["hits"]}</td>";
+        echo "<td>{$data["memory_consumption"]}</td>";
+        echo "<td>{$file}</td>";
+        echo "</tr>";
+    }
 }
 ?>
       </table>
