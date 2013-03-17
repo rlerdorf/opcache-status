@@ -173,9 +173,9 @@ foreach($config['directives'] as $key=>$value) {
       <div class="content">
       <table style="font-size:0.8em;">
       <tr>
-        <th>Hits</th>
-        <th>Memory</th>
-        <th>Path</th>
+        <th width="10%">Hits</th>
+        <th width="15%">Memory</th>
+        <th width="75%">Path</th>
       </tr>
 <?php
 foreach($status['scripts'] as $key=>$data) {
