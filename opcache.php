@@ -180,8 +180,8 @@ foreach($config['directives'] as $key=>$value) {
       <table style="font-size:0.8em;">
       <tr>
         <th width="10%">Hits</th>
-        <th width="15%">Memory</th>
-        <th width="75%">Path</th>
+        <th width="20%">Memory</th>
+        <th width="70%">Path</th>
       </tr>
 <?php
 foreach($status['scripts'] as $key=>$data) {
