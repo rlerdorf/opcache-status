@@ -10,3 +10,10 @@ I know it is rather ugly, so please spruce it up. But I would like
 to keep it relatively small and to a single file so it is easy to 
 drop into a directory anywhere without worrying about separate css/js/php
 files.
+
+Some things I'd like to see:
+
+ - The ability to sort the list of cached scripts by the various columns
+ - A better layout that can accomodate more of the script data without looking cluttered
+ - A tuning suggestion tab (need to add a couple of things to the opcache output first though)
+
