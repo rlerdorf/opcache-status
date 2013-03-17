@@ -175,7 +175,7 @@ foreach($config['directives'] as $key=>$value) {
 
     <div class="tab">
       <input type="radio" id="tab-scripts" name="tab-group-1">
-      <label for="tab-scripts">Scripts</label>
+      <label for="tab-scripts">Scripts (<?=count($status["scripts"]); ?>)</label>
       <div class="content">
       <table style="font-size:0.8em;">
       <tr>
