@@ -166,7 +166,11 @@ foreach($dirs as $dir => $files) {
         echo "<tr>";
         echo "<td>{$data["hits"]}</td>";
         echo "<td>{$data["memory_consumption"]}</td>";
-        echo "<td>{$file}</td>";
+        
+        if ($count > 1) {
+            echo "<td>{$file}</td>";
+        } else echo "<td>{$dir}/{$file}</td>";
+        
         echo "</tr>";
     }
 }
