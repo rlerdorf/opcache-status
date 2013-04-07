@@ -143,6 +143,7 @@ foreach($status as $key=>$value) {
       if($k=='used_memory' || $k=='free_memory' || $k == 'wasted_memory') $v = size_for_humans($v);
       if($k=='current_wasted_percentage' || $k=='opcache_hit_rate') $v = number_format($v,2).'%';
       if($k=='blacklist_miss_ratio') $v = number_format($v,2).'%';
+      if($k=='start_time' || $k=='last_restart_time') $v = ($v ? date(DATE_RFC822,$v) : 'never');
       echo "<tr><th align=\"left\">$k</th><td align=\"right\">$v</td></tr>\n";
     }
     continue;
