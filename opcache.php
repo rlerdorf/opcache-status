@@ -197,8 +197,13 @@ foreach($dirs as $dir => $files) {
     $count = count($files);
     
     if ($count > 1) {
+        $m = 0;
+        foreach ($files as $file => $data) {
+            $m += $data["memory_consumption"];
+        }
+        $m = size_for_humans($m);
         echo "<tr>";
-        echo "<th class=\"clickable\" id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} files)</th>";
+        echo "<th class=\"clickable\" id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} files, $m)</th>";
         echo "</tr>";    
     }
     
