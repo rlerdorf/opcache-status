@@ -142,7 +142,7 @@ foreach($status as $key=>$value) {
       if($v===true) $value = "true";
       if($k=='used_memory' || $k=='free_memory' || $k == 'wasted_memory') $v = size_for_humans($v);
       if($k=='current_wasted_percentage' || $k=='opcache_hit_rate') $v = number_format($v,2).'%';
-      if($k=='blacklist_miss_ratio') $v = number_format($v,2);
+      if($k=='blacklist_miss_ratio') $v = number_format($v,2).'%';
       echo "<tr><th align=\"left\">$k</th><td align=\"right\">$v</td></tr>\n";
     }
     continue;
