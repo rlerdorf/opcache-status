@@ -80,8 +80,7 @@ p.capitalize{
     border:1px solid #ccc;
     height:500px;
     width:480px;
-    overflow-y:auto;
-    overflow-x:hidden;
+    overflow:auto;
 }
 .content table {
     width:100%;
