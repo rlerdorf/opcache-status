@@ -141,6 +141,7 @@ function toggleVisible(head, row) {
     }
 }
 </script>
+<title>PHP <?= phpversion()?> OpCache <?= $config['version']['version']?></title>
 </head>
 <body>
   <h1>PHP <?= phpversion()?> OpCache <?= $config['version']['version']?></h1>
