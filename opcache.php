@@ -89,7 +89,7 @@ p.capitalize {
     width: 100%
 }
 
-.content th {
+.content th, .tab:nth-child(3) td {
     text-align: left;
 }
 
