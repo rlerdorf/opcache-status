@@ -240,12 +240,8 @@ foreach($dirs as $dir => $files) {
     foreach ($files as $file => $data) {
         echo "<tr id=\"row-{$id}\">";
         echo "<td>{$data["hits"]}</td>";
-        echo "<td>" .size_for_humans($data["memory_consumption"]). "</td>";
-        
-        if ($count > 1) {
-            echo "<td>{$file}</td>";
-        } else echo "<td>{$dir}/{$file}</td>";
-        
+	echo "<td>" .size_for_humans($data["memory_consumption"]). "</td>";
+	echo "<td>{$file}</td>";
         echo "</tr>";
     }
     
