@@ -71,6 +71,9 @@ p.capitalize{
 .tab [type=radio]{
     display: none;
 }
+.tab th, .tab td {
+  padding: 4px 10px;
+}
 .content{
     position:absolute;
     top:28px;
