@@ -27,23 +27,8 @@ body{
     position:relative;
     width:1024px;
 }
-text{
-    font:10px sans-serif;
-}
-form{
-    position: absolute;
-    right:210px;
-    top:50px;
-}
-#graph{
-    position: absolute;
-    right:0px;
-    top:80px;
-}
-#stats{
-    position: absolute;
-    right:234px;
-    top:240px;
+h1 {
+  padding: 10px 0;
 }
 tbody tr:nth-child(even) {
     background-color:#eee;
@@ -53,9 +38,8 @@ p.capitalize{
 }
 .tabs{
     position:relative;
-    min-height:200px;
-    clear:both;
-    margin:25px 0;
+    float: left;
+    width: 60%;
 }
 .tab{
     float:left;
@@ -82,7 +66,7 @@ p.capitalize{
     padding:20px;
     border:1px solid #ccc;
     height:500px;
-    width:480px;
+    width:560px;
     overflow-y:auto;
     overflow-x:hidden;
 }
@@ -100,6 +84,26 @@ p.capitalize{
 }
 [type=radio]:checked ~ label ~ .content{
     z-index: 1;
+}
+#graph{
+    float: right;
+    width: 40%;
+    position: relative;
+}
+#graph > form{
+    position: absolute;
+    right:110px;
+    top:-20px;
+}
+#graph > svg {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+#stats{
+    position: absolute;
+    right:125px;
+    top:150px;
 }
 </style>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
@@ -122,13 +126,7 @@ function toggleVisible(head, row) {
 </head>
 <body>
   <h1>PHP <?= phpversion()?> OpCache <?= $config['version']['version']?></h1>
-  <form>
-    <label><input type="radio" name="dataset" value="memory" checked> Memory</label>
-    <label><input type="radio" name="dataset" value="keys"> Keys</label>
-    <label><input type="radio" name="dataset" value="hits"> Hits</label>
-  </form>
-  <div id="stats">
-  </div>
+
   <div class="tabs">
 
     <div class="tab">
@@ -226,6 +224,13 @@ foreach($dirs as $dir => $files) {
   </div>
 
   <div id="graph">
+    <form>
+      <label><input type="radio" name="dataset" value="memory" checked> Memory</label>
+      <label><input type="radio" name="dataset" value="keys"> Keys</label>
+      <label><input type="radio" name="dataset" value="hits"> Hits</label>
+    </form>
+
+    <div id="stats"></div>
   </div>
 
 <?php 
@@ -241,7 +246,7 @@ var dataset = {
 };
 EOB;
 ?>
-var width = 600,
+var width = 400,
     height = 400,
     radius = Math.min(width, height) / 2;
 var color = d3.scale.category20();
@@ -302,4 +307,4 @@ function arcTween(a) {
 }
 </script>
 </body>
-</html>  
+</html>
