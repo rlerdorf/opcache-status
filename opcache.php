@@ -19,95 +19,113 @@ function size_for_humans($bytes) {
 ?>
 <!DOCTYPE html>
 <meta charset="utf-8">
-<html><head>
+<html>
+<head>
 <style>
-body{
-    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
-    margin:auto;
-    position:relative;
-    width:1024px;
+body {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    margin: auto;
+    position: relative;
+    width: 1024px;
 }
+
 h1 {
-  padding: 10px 0;
+    padding: 10px 0
 }
+
 tbody tr:nth-child(even) {
-    background-color:#eee;
+    background-color: #eee
 }
-p.capitalize{
-    text-transform:capitalize;
+
+p.capitalize {
+    text-transform: capitalize
 }
-.tabs{
-    position:relative;
+
+.tabs {
+    position: relative;
     float: left;
     width: 60%;
 }
-.tab{
-    float:left;
+
+.tab {
+    float: left
 }
-.tab label{
-    background: #eee;
-    padding:10px;
-    border:1px solid #ccc;
-    margin-left:-1px;
-    position:relative;
-    left:1px;
-}
-.tab [type=radio]{
-    display: none;
-}
-.tab th, .tab td {
-  padding: 4px 10px;
-}
-.content{
-    position:absolute;
-    top:28px;
+
+ .tab label {
+     background: #eee;
+     padding: 10px;
+     border: 1px solid #ccc;
+     margin-left: -1px;
+     position: relative;
+     left: 1px;
+ }
+
+ .tab [type=radio] {
+     display: none
+ }
+
+ .tab th, .tab td {
+     padding: 4px 10px
+ }
+
+.content {
+    position: absolute;
+    top: 28px;
     left: 0;
-    background:white;
-    padding:20px;
-    border:1px solid #ccc;
-    height:500px;
-    width:560px;
-    overflow-y:auto;
-    overflow-x:hidden;
-}
-.content table {
-    width:100%;
-}
-.clickable {
-    cursor: hand; 
-    cursor: pointer; 
-}
-[type=radio]:checked ~ label{
     background: white;
-    border-bottom:1px solid white;
-    z-index:2;
+    padding: 20px;
+    border: 1px solid #ccc;
+    height: 500px;
+    width: 560px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
-[type=radio]:checked ~ label ~ .content{
-    z-index: 1;
+
+ .content table {
+     width: 100%
+ }
+
+.clickable {
+    cursor: hand;
+    cursor: pointer;
 }
-#graph{
+
+[type=radio]:checked ~ label {
+    background: white;
+    border-bottom: 1px solid white;
+    z-index: 2;
+}
+
+ [type=radio]:checked ~ label ~ .content {
+     z-index: 1
+ }
+
+#graph {
     float: right;
     width: 40%;
     position: relative;
 }
-#graph > form{
+
+ #graph > form {
+     position: absolute;
+     right: 110px;
+     top: -20px;
+ }
+
+ #graph > svg {
+     position: absolute;
+     top: 0;
+     right: 0;
+ }
+
+#stats {
     position: absolute;
-    right:110px;
-    top:-20px;
-}
-#graph > svg {
-    position: absolute;
-    top: 0;
-    right: 0;
-}
-#stats{
-    position: absolute;
-    right:125px;
-    top:150px;
+    right: 125px;
+    top: 150px;
 }
 </style>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
-<script language="javascript">
+<script type="text/javascript">
 var hidden = {};
 function toggleVisible(head, row) {
     if (!hidden[row]) {
