@@ -1,14 +1,14 @@
 <?php
 /*
-* Fetch configuration and status information from OpCache
-*/
+ * Fetch configuration and status information from OpCache
+ */
 $config = opcache_get_configuration();
 $status = opcache_get_status();
 
-/*
-* Turn bytes into a human readable format
-* @param $bytes
-*/
+/**
+ * Turn bytes into a human readable format
+ * @param $bytes
+ */
 function size_for_humans($bytes) {
     if ($bytes > 1048576) {
         return sprintf("%.2f&nbsp;MB", $bytes/1048576);
