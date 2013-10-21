@@ -231,12 +231,11 @@ $id = 1;
 
 foreach($dirs as $dir => $files) {
     $count = count($files);
-    
-    if ($count > 1) {
-        echo "<tr>";
-        echo "<th class=\"clickable\" id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} files)</th>";
-        echo "</tr>";    
-    }
+    $file_plural = $count > 1 ? 's' : null;
+
+    echo "<tr>";
+    echo "<th class=\"clickable\" id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} file{$file_plural})</th>";
+    echo "</tr>";
     
     foreach ($files as $file => $data) {
         echo "<tr id=\"row-{$id}\">";
