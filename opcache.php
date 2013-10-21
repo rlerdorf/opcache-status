@@ -81,8 +81,7 @@ p.capitalize {
 	border: 1px solid #ccc;
 	height: 500px;
 	width: 560px;
-	overflow-y: auto;
-	overflow-x: hidden;
+	overflow: auto;
 }
 
 .content table {
@@ -108,7 +107,7 @@ p.capitalize {
 }
 
 [type=radio]:checked ~ label ~ .content {
-	z-index: 1
+	z-index: 1;
 }
 
 #graph {
@@ -173,12 +172,13 @@ function toggleVisible(head, row) {
 						if ($key === 'scripts') continue;
 
 						if (is_array($value)) {
-							foreach ($value as $k=>$v) {
+							foreach ($value as $k => $v) {
 								if ($v === false) $value = 'false';
 								if ($v === true) $value = 'true';
 								if ($k === 'used_memory' || $k === 'free_memory' || $k  ===  'wasted_memory') $v = size_for_humans($v);
-								if ($k === 'current_wasted_percentage' || $k === 'opcache_hit_rate') $v = number_format($v,2).'%';
-								if ($k === 'blacklist_miss_ratio') $v = number_format($v,2);
+								if ($k === 'current_wasted_percentage' || $k === 'opcache_hit_rate') $v = number_format($v,2) . '%';
+								if ($k === 'blacklist_miss_ratio') $v = number_format($v, 2) . '%';
+								if ($k === 'start_time' || $k === 'last_restart_time') $v = ($v ? date(DATE_RFC822, $v) : 'never');
 
 								echo "<tr><th>$k</th><td>$v</td></tr>\n";
 							}
@@ -232,9 +232,14 @@ function toggleVisible(head, row) {
 					foreach($dirs as $dir => $files) {
 						$count = count($files);
 						$file_plural = $count > 1 ? 's' : null;
+						$m = 0;
+						foreach ($files as $file => $data) {
+							$m += $data["memory_consumption"];
+						}
+						$m = size_for_humans($m);
 
 						echo '<tr>';
-						echo "<th class=\"clickable\" id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} file{$file_plural})</th>";
+						echo "<th class=\"clickable\" id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} file{$file_plural}, {$m})</th>";
 						echo '</tr>';
 
 						foreach ($files as $file => $data) {
