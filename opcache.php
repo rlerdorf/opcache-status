@@ -33,6 +33,10 @@ h1 {
     padding: 10px 0
 }
 
+table {
+   border-collapse: collapse;
+}
+
 tbody tr:nth-child(even) {
     background-color: #eee
 }
@@ -51,22 +55,22 @@ p.capitalize {
     float: left
 }
 
- .tab label {
-     background: #eee;
-     padding: 10px;
-     border: 1px solid #ccc;
-     margin-left: -1px;
-     position: relative;
-     left: 1px;
- }
+.tab label {
+   background: #eee;
+   padding: 10px;
+   border: 1px solid #ccc;
+   margin-left: -1px;
+   position: relative;
+   left: 1px;
+}
 
- .tab [type=radio] {
-     display: none
- }
+.tab [type=radio] {
+    display: none
+}
 
- .tab th, .tab td {
-     padding: 4px 10px
- }
+.tab th, .tab td {
+    padding: 6px 10px
+}
 
 .content {
     position: absolute;
@@ -81,9 +85,17 @@ p.capitalize {
     overflow-x: hidden;
 }
 
- .content table {
-     width: 100%
- }
+.content table {
+    width: 100%
+}
+
+.content th {
+    text-align: left;
+}
+
+.content td {
+    text-align: right;
+}
 
 .clickable {
     cursor: hand;
@@ -96,9 +108,9 @@ p.capitalize {
     z-index: 2;
 }
 
- [type=radio]:checked ~ label ~ .content {
-     z-index: 1
- }
+[type=radio]:checked ~ label ~ .content {
+   z-index: 1
+}
 
 #graph {
     float: right;
@@ -106,22 +118,27 @@ p.capitalize {
     position: relative;
 }
 
- #graph > form {
-     position: absolute;
-     right: 110px;
-     top: -20px;
- }
+#graph > form {
+   position: absolute;
+   right: 110px;
+   top: -20px;
+}
 
- #graph > svg {
-     position: absolute;
-     top: 0;
-     right: 0;
- }
+#graph > svg {
+   position: absolute;
+   top: 0;
+   right: 0;
+}
 
 #stats {
     position: absolute;
     right: 125px;
-    top: 150px;
+    top: 145px;
+}
+
+#stats th, #stats td {
+    padding: 6px 10px;
+    font-size: 0.8em;
 }
 </style>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
@@ -163,13 +180,13 @@ foreach($status as $key=>$value) {
       if($k=='used_memory' || $k=='free_memory' || $k == 'wasted_memory') $v = size_for_humans($v);
       if($k=='current_wasted_percentage' || $k=='opcache_hit_rate') $v = number_format($v,2).'%';
       if($k=='blacklist_miss_ratio') $v = number_format($v,2);
-      echo "<tr><th align=\"left\">$k</th><td align=\"right\">$v</td></tr>\n";
+      echo "<tr><th>$k</th><td>$v</td></tr>\n";
     }
     continue;
   }
   if($value===false) $value = "false";
   if($value===true) $value = "true";
-  echo "<tr><th align=\"left\">$key</th><td align=\"right\">$value</td></tr>\n";
+  echo "<tr><th>$key</th><td>$value</td></tr>\n";
 }
 ?>
       </table>
@@ -186,7 +203,7 @@ foreach($config['directives'] as $key=>$value) {
   if($value===false) $value = "false";
   if($value===true) $value = "true";
   if($key == 'opcache.memory_consumption') $value = size_for_humans($value);
-  echo "<tr><th align=\"left\">$key</th><td align=\"right\">$value</td></tr>\n";
+  echo "<tr><th>$key</th><td>$value</td></tr>\n";
 }
 ?>
       </table>
@@ -294,20 +311,20 @@ set_text("memory");
 function set_text(t) {
   if(t=="memory") {
     d3.select("#stats").html(
-      "<table><tr><th style='background:#1f77b4;' align=right>Used</th><td align=right><?php echo size_for_humans($mem['used_memory'])?></td></tr>"+
-      "<tr><th style='background:#aec7e8;' align=right>Free</th><td align=right><?php echo size_for_humans($mem['free_memory'])?></td></tr>"+
-      "<tr><th style='background:#ff7f0e;' align=right>Wasted</th><td align=right><?php echo size_for_humans($mem['wasted_memory'])?></td></tr>"+
-      "<tr><th style='background:#ff7f0e;'> </th><td align=right><?php echo number_format($mem['current_wasted_percentage'],2)?>%</td></tr></table>"
+      "<table><tr><th style='background:#1f77b4;'>Used</th><td><?php echo size_for_humans($mem['used_memory'])?></td></tr>"+
+      "<tr><th style='background:#aec7e8;'>Free</th><td><?php echo size_for_humans($mem['free_memory'])?></td></tr>"+
+      "<tr><th style='background:#ff7f0e;' rowspan=\"2\">Wasted</th><td><?php echo size_for_humans($mem['wasted_memory'])?></td></tr>"+
+      "<tr><td><?php echo number_format($mem['current_wasted_percentage'],2)?>%</td></tr></table>"
     );
   } else if(t=="keys") {
     d3.select("#stats").html(
-      "<table><tr><th style='background:#1f77b4;'>Cached keys</th><td align=right>"+dataset[t][0]+"</td></tr>"+
-      "<tr><th style='background:#aec7e8;'>Free Keys</th><td align=right>"+dataset[t][1]+"</td></tr></table>"
+      "<table><tr><th style='background:#1f77b4;'>Cached keys</th><td>"+dataset[t][0]+"</td></tr>"+
+      "<tr><th style='background:#aec7e8;'>Free Keys</th><td>"+dataset[t][1]+"</td></tr></table>"
     );
   } else if(t=="hits") {
     d3.select("#stats").html(
-      "<table><tr><th style='background:#1f77b4;' align=right>Cache Hits</th><td align=right>"+dataset[t][0]+"</td></tr>"+
-      "<tr><th style='background:#aec7e8;' align=right>Misses</th><td align=right>"+dataset[t][1]+"</td></tr></table>"
+      "<table><tr><th style='background:#1f77b4;'>Cache Hits</th><td>"+dataset[t][0]+"</td></tr>"+
+      "<tr><th style='background:#aec7e8;'>Misses</th><td>"+dataset[t][1]+"</td></tr></table>"
     );
   }
 }
