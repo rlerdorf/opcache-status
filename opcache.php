@@ -279,8 +279,12 @@ function toggleVisible(head, row) {
 	?>
 	var width = 400,
 			height = 400,
-			radius = Math.min(width, height) / 2;
-	var color = d3.scale.category20();
+			radius = Math.min(width, height) / 2,
+			colours = ['#B41F1F', '#1FB437', '#ff7f0e'];
+	d3.scale.customColours = function() {
+		return d3.scale.ordinal().range(colours);
+	};
+	var colour = d3.scale.customColours();
 	var pie = d3.layout.pie()
 			.sort(null);
 
@@ -290,13 +294,13 @@ function toggleVisible(head, row) {
 	var svg = d3.select("#graph").append("svg")
 			.attr("width", width)
 			.attr("height", height)
-		.append("g")
+			.append("g")
 			.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
 	var path = svg.selectAll("path")
 			.data(pie(dataset.memory))
-		.enter().append("path")
-			.attr("fill", function(d, i) { return color(i); })
+			.enter().append("path")
+			.attr("fill", function(d, i) { return colour(i); })
 			.attr("d", arc)
 			.each(function(d) { this._current = d; }); // store the initial values
 
@@ -306,20 +310,20 @@ function toggleVisible(head, row) {
 	function set_text(t) {
 		if(t=="memory") {
 			d3.select("#stats").html(
-				"<table><tr><th style='background:#1f77b4;'>Used</th><td><?php echo size_for_humans($mem['used_memory'])?></td></tr>"+
-				"<tr><th style='background:#aec7e8;'>Free</th><td><?php echo size_for_humans($mem['free_memory'])?></td></tr>"+
+				"<table><tr><th style='background:#B41F1F;'>Used</th><td><?php echo size_for_humans($mem['used_memory'])?></td></tr>"+
+				"<tr><th style='background:#1FB437;'>Free</th><td><?php echo size_for_humans($mem['free_memory'])?></td></tr>"+
 				"<tr><th style='background:#ff7f0e;' rowspan=\"2\">Wasted</th><td><?php echo size_for_humans($mem['wasted_memory'])?></td></tr>"+
 				"<tr><td><?php echo number_format($mem['current_wasted_percentage'],2)?>%</td></tr></table>"
 			);
 		} else if(t=="keys") {
 			d3.select("#stats").html(
-				"<table><tr><th style='background:#1f77b4;'>Cached keys</th><td>"+dataset[t][0]+"</td></tr>"+
-				"<tr><th style='background:#aec7e8;'>Free Keys</th><td>"+dataset[t][1]+"</td></tr></table>"
+				"<table><tr><th style='background:#B41F1F;'>Cached keys</th><td>"+dataset[t][0]+"</td></tr>"+
+				"<tr><th style='background:#1FB437;'>Free Keys</th><td>"+dataset[t][1]+"</td></tr></table>"
 			);
 		} else if(t=="hits") {
 			d3.select("#stats").html(
-				"<table><tr><th style='background:#1f77b4;'>Cache Hits</th><td>"+dataset[t][0]+"</td></tr>"+
-				"<tr><th style='background:#aec7e8;'>Misses</th><td>"+dataset[t][1]+"</td></tr></table>"
+				"<table><tr><th style='background:#1FB437;'>Cache Hits</th><td>"+dataset[t][0]+"</td></tr>"+
+				"<tr><th style='background:#B41F1F;'>Misses</th><td>"+dataset[t][1]+"</td></tr></table>"
 			);
 		}
 	}
