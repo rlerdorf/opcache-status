@@ -1,7 +1,11 @@
 <?php
-/*
- * Fetch configuration and status information from OpCache
- */
+
+if (!extension_loaded('Zend OPcache')) {
+	echo '<div style="background-color: #F2DEDE; color: #B94A48; padding: 1em;">You do not have the Zend OPCache extension loaded, sample data is being shown instead.</div>';
+	require 'data-sample.php';
+}
+
+// Fetch configuration and status information from OpCache
 $config = opcache_get_configuration();
 $status = opcache_get_status();
 
@@ -239,9 +243,9 @@ function toggleVisible(head, row) {
 						$m = size_for_humans($m);
 
 						if ($count > 1) {
-						echo '<tr>';
-						echo "<th class=\"clickable\" id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} file{$file_plural}, {$m})</th>";
-						echo '</tr>';
+							echo '<tr>';
+							echo "<th class=\"clickable\" id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} file{$file_plural}, {$m})</th>";
+							echo '</tr>';
 						}
 
 						foreach ($files as $file => $data) {
