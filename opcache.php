@@ -238,15 +238,17 @@ function toggleVisible(head, row) {
 						}
 						$m = size_for_humans($m);
 
+						if ($count > 1) {
 						echo '<tr>';
 						echo "<th class=\"clickable\" id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} file{$file_plural}, {$m})</th>";
 						echo '</tr>';
+						}
 
 						foreach ($files as $file => $data) {
 							echo "<tr id=\"row-{$id}\">";
 							echo "<td>{$data["hits"]}</td>";
 							echo "<td>" .size_for_humans($data["memory_consumption"]). "</td>";
-							echo "<td>{$file}</td>";
+							echo $count > 1 ? "<td>{$file}</td>" : "<td>{$dir}/{$file}</td>";
 							echo '</tr>';
 						}
 
