@@ -278,7 +278,7 @@ function toggleVisible(head, row) {
 	var dataset = {
 		memory: [{$mem['used_memory']},{$mem['free_memory']},{$mem['wasted_memory']}],
 		keys: [{$stats['num_cached_keys']},{$free_keys},0],
-		hits: [{$stats['hits']},{$stats['misses']},0]
+		hits: [{$stats['misses']},{$stats['hits']},0]
 	};
 	";
 	?>
@@ -327,8 +327,8 @@ function toggleVisible(head, row) {
 			);
 		} else if(t=="hits") {
 			d3.select("#stats").html(
-				"<table><tr><th style='background:#1FB437;'>Cache Hits</th><td>"+dataset[t][0]+"</td></tr>"+
-				"<tr><th style='background:#B41F1F;'>Misses</th><td>"+dataset[t][1]+"</td></tr></table>"
+				"<table><tr><th style='background:#B41F1F;'>Misses</th><td>"+dataset[t][0]+"</td></tr>"+
+				"<tr><th style='background:#1FB437;'>Cache Hits</th><td>"+dataset[t][1]+"</td></tr></table>"
 			);
 		}
 	}
