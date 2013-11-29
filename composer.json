@@ -1,0 +1,14 @@
+{
+    "name": "rlerdorf/opcache-status",
+    "description": "A one-page opcache status page",
+    "license": "PHP-3.0",
+    "authors": [
+        {
+            "name": "The contributors",
+            "homepage": "https://github.com/rlerdorf/opcache-status/graphs/contributors"
+        }
+    ],
+    "require": {
+        "PHP": ">=5.5.0"
+    }
+}
