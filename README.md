@@ -14,6 +14,6 @@ files.
 Some things I'd like to see:
 
  - The ability to sort the list of cached scripts by the various columns
- - A better layout that can accomodate more of the script data without looking cluttered
+ - A better layout that can accommodate more of the script data without looking cluttered
  - A tuning suggestion tab (need to add a couple of things to the opcache output first though)
 
