@@ -24,7 +24,7 @@ function size_for_humans($bytes) {
 /**
  * Borrowed from Laravel
  */
-function array_set(&$array, $key, $value) {
+function array_pset(&$array, $key, $value) {
 	if (is_null($key)) return $array = $value;
 	$keys = explode(DIRECTORY_SEPARATOR, ltrim($key,DIRECTORY_SEPARATOR));
 	while (count($keys) > 1) {
@@ -274,10 +274,10 @@ function toggleVisible(head, row) {
 						<th width="70%">Path</th>
 					</tr>
 					<?php
-					$d3scripts = array();
+					$d3scripts = $dirs = array();
 					foreach($status['scripts'] as $key=>$data) {
 						$dirs[dirname($key)][basename($key)]=$data;
-						array_set($d3scripts, $key, array(
+						array_pset($d3scripts, $key, array(
 							'name' => basename($key),
 							'size' => $data['memory_consumption'],
 						));
