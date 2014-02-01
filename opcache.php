@@ -16,6 +16,25 @@ function size_for_humans($bytes) {
         return sprintf("%.2f KB", $bytes/1024);
     } else return sprintf("%d bytes", $bytes);
 }
+
+/*
+* Borrowed from Laravel
+ */
+function array_set(&$array, $key, $value)
+{
+  if (is_null($key)) return $array = $value;
+  $keys = explode(DIRECTORY_SEPARATOR, ltrim($key,DIRECTORY_SEPARATOR));
+  while (count($keys) > 1) {
+    $key = array_shift($keys);
+    if ( ! isset($array[$key]) || ! is_array($array[$key])) {
+      $array[$key] = array();
+    }
+    $array =& $array[$key];
+  }
+  $array[array_shift($keys)] = $value;
+  return $array;
+}
+
 ?>
 <!DOCTYPE html>
 <meta charset="utf-8">
@@ -94,7 +113,30 @@ p.capitalize{
 [type=radio]:checked ~ label ~ .content{
     z-index: 1;
 }
-</style>
+#partition {
+  position: absolute;
+  top: 650px;
+  font-size: 11px;
+  padding-bottom: 20px;
+}
+
+
+rect {
+  stroke: #eee;
+  fill: #aaa;
+  fill-opacity: 1;
+}
+
+rect.parent {
+  cursor: pointer;
+  fill: steelblue;
+}
+
+text {
+  pointer-events: none;
+}
+
+    </style>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
 <script language="javascript">
 var hidden = {};
@@ -178,8 +220,14 @@ foreach($config['directives'] as $key=>$value) {
         <th width="75%">Path</th>
       </tr>
 <?php
+$d3scripts = array();
+
 foreach($status['scripts'] as $key=>$data) {
     $dirs[dirname($key)][basename($key)]=$data;
+    array_set($d3scripts, $key, array(
+      'name' => basename($key),
+      'size' => $data['memory_consumption'],
+    ));
 }
 
 asort($dirs);
@@ -188,25 +236,25 @@ $id = 1;
 
 foreach($dirs as $dir => $files) {
     $count = count($files);
-    
+
     if ($count > 1) {
         echo "<tr>";
         echo "<th id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} files)</th>";
-        echo "</tr>";    
+        echo "</tr>";
     }
-    
+
     foreach ($files as $file => $data) {
         echo "<tr id=\"row-{$id}\">";
         echo "<td>{$data["hits"]}</td>";
         echo "<td>" .size_for_humans($data["memory_consumption"]). "</td>";
-        
+
         if ($count > 1) {
             echo "<td>{$file}</td>";
         } else echo "<td>{$dir}/{$file}</td>";
-        
+
         echo "</tr>";
     }
-    
+
     ++$id;
 }
 ?>
@@ -219,7 +267,7 @@ foreach($dirs as $dir => $files) {
   <div id="graph">
   </div>
 
-<?php 
+<?php
 $mem = $status['memory_usage'];
 $stats = $status['opcache_statistics'];
 $free_keys = $stats['max_cached_keys'] - $stats['num_cached_keys'];
@@ -292,5 +340,115 @@ function arcTween(a) {
   };
 }
 </script>
+
+<div id="partition"></div>
+
+<?php
+
+function processd3( $value, $name=null )
+{
+  if (array_key_exists('size',$value)) {
+    return $value;
+  }
+  $array = array('name'=>$name,'children'=>array());
+  foreach($value as $k=>$v)
+  {
+    $array['children'][] = processd3($v, $k);
+  }
+  return $array;
+}
+
+$basename = '';
+while(true) {
+  if( count($d3scripts)==1 ) {
+    $basename .= DIRECTORY_SEPARATOR . key($d3scripts);
+    $d3scripts = reset($d3scripts);
+  } else {
+    break;
+  }
+}
+
+$d3scripts = processd3($d3scripts, $basename);
+
+?>
+<script type="text/javascript">
+
+function size_for_humans(bytes) {
+  if (bytes > 1048576) {
+      return (bytes/1048576).toFixed(2) + ' MB';
+  } else if (bytes > 1024) {
+      return (bytes/1024).toFixed(2) + ' KB';
+  } else return bytes + ' bytes';
+}
+
+var w = 1024,
+    h = 600,
+    x = d3.scale.linear().range([0, w]),
+    y = d3.scale.linear().range([0, h]);
+
+var vis = d3.select("#partition")
+    .style("width", w + "px")
+    .style("height", h + "px")
+  .append("svg:svg")
+    .attr("width", w)
+    .attr("height", h);
+
+var partition = d3.layout.partition()
+    .value(function(d) { return d.size; });
+
+  root = JSON.parse('<?php echo json_encode($d3scripts); ?>');
+
+  var g = vis.selectAll("g")
+      .data(partition.nodes(root))
+    .enter().append("svg:g")
+      .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
+      .on("click", click);
+
+  var kx = w / root.dx,
+      ky = h / 1;
+
+  g.append("svg:rect")
+      .attr("width", root.dy * kx)
+      .attr("height", function(d) { return d.dx * ky; })
+      .attr("class", function(d) { return d.children ? "parent" : "child"; });
+
+  g.append("svg:text")
+      .attr("transform", transform)
+      .attr("dy", ".35em")
+      .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; })
+      .text(function(d) { return d.name; })
+
+  d3.select(window)
+      .on("click", function() { click(root); })
+
+  function click(d) {
+    if (!d.children) return;
+
+    kx = (d.y ? w - 40 : w) / (1 - d.y);
+    ky = h / d.dx;
+    x.domain([d.y, 1]).range([d.y ? 40 : 0, w]);
+    y.domain([d.x, d.x + d.dx]);
+
+    var t = g.transition()
+        .duration(d3.event.altKey ? 7500 : 750)
+        .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; });
+
+    t.select("rect")
+        .attr("width", d.dy * kx)
+        .attr("height", function(d) { return d.dx * ky; });
+
+    t.select("text")
+        .attr("transform", transform)
+        .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; });
+
+    d3.event.stopPropagation();
+  }
+
+  function transform(d) {
+    return "translate(8," + d.dx * ky / 2 + ")";
+  }
+
+
+</script>
 </body>
-</html>  
+</html>
