@@ -1,2 +1,4 @@
 composer.lock
 composer.phar
+atlassian-ide-plugin.xml
+.idea/
