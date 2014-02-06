@@ -1,25 +1,215 @@
 <?php
 
 if (!extension_loaded('Zend OPcache')) {
-	echo '<div style="background-color: #F2DEDE; color: #B94A48; padding: 1em;">You do not have the Zend OPcache extension loaded, sample data is being shown instead.</div>';
-	require 'data-sample.php';
+    echo '<div style="background-color: #F2DEDE; color: #B94A48; padding: 1em;">You do not have the Zend OPcache extension loaded, sample data is being shown instead.</div>';
+    require 'data-sample.php';
 }
 
-// Fetch configuration and status information from OpCache
-$config = opcache_get_configuration();
-$status = opcache_get_status();
+class OpCacheDataModel
+{
+    private $configuration;
+    private $status;
 
-/**
- * Turn bytes into a human readable format
- * @param $bytes
- */
-function size_for_humans($bytes) {
-	if ($bytes > 1048576) {
-		return sprintf('%.2f&nbsp;MB', $bytes / 1048576);
-	} else if ($bytes > 1024) {
-		return sprintf('%.2f&nbsp;kB', $bytes / 1024);
-	} else return sprintf('%d&nbsp;bytes', $bytes);
+    public function __construct()
+    {
+        $this->configuration = opcache_get_configuration();
+        $this->status = opcache_get_status();
+    }
+
+    public function getPageTitle()
+    {
+        return 'PHP ' . phpversion() . " with OpCache {$this->configuration['version']['version']}";
+    }
+
+    public function getStatusDataRows()
+    {
+        $rows = array();
+        foreach ($this->status as $key => $value) {
+            if ($key === 'scripts') {
+                continue;
+            }
+
+            if (is_array($value)) {
+                foreach ($value as $k => $v) {
+                    if ($v === false) {
+                        $value = 'false';
+                    }
+                    if ($v === true) {
+                        $value = 'true';
+                    }
+                    if ($k === 'used_memory' || $k === 'free_memory' || $k === 'wasted_memory') {
+                        $v = $this->size_for_humans(
+                            $v
+                        );
+                    }
+                    if ($k === 'current_wasted_percentage' || $k === 'opcache_hit_rate') {
+                        $v = number_format(
+                                $v,
+                                2
+                            ) . '%';
+                    }
+                    if ($k === 'blacklist_miss_ratio') {
+                        $v = number_format($v, 2) . '%';
+                    }
+                    if ($k === 'start_time' || $k === 'last_restart_time') {
+                        $v = ($v ? date(DATE_RFC822, $v) : 'never');
+                    }
+
+                    $rows[] = "<tr><th>$k</th><td>$v</td></tr>\n";
+                }
+                continue;
+            }
+            if ($value === false) {
+                $value = 'false';
+            }
+            if ($value === true) {
+                $value = 'true';
+            }
+            $rows[] = "<tr><th>$key</th><td>$value</td></tr>\n";
+        }
+
+        return implode("\n", $rows);
+    }
+
+    public function getConfigDataRows()
+    {
+        $rows = array();
+        foreach ($this->configuration['directives'] as $key => $value) {
+            if ($value === false) {
+                $value = 'false';
+            }
+            if ($value === true) {
+                $value = 'true';
+            }
+            if ($key == 'opcache.memory_consumption') {
+                $value = $this->size_for_humans($value);
+            }
+            $rows[] = "<tr><th>$key</th><td>$value</td></tr>\n";
+        }
+
+        return implode("\n", $rows);
+    }
+
+    public function getScriptStatusRows()
+    {
+        foreach ($this->status['scripts'] as $key => $data) {
+            $dirs[dirname($key)][basename($key)] = $data;
+        }
+
+        asort($dirs);
+
+        $id = 1;
+
+        $rows = array();
+        foreach ($dirs as $dir => $files) {
+            $count = count($files);
+            $file_plural = $count > 1 ? 's' : null;
+            $m = 0;
+            foreach ($files as $file => $data) {
+                $m += $data["memory_consumption"];
+            }
+            $m = $this->size_for_humans($m);
+
+            if ($count > 1) {
+                $rows[] = '<tr>';
+                $rows[] = "<th class=\"clickable\" id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} file{$file_plural}, {$m})</th>";
+                $rows[] = '</tr>';
+            }
+
+            foreach ($files as $file => $data) {
+                $rows[] = "<tr id=\"row-{$id}\">";
+                $rows[] = "<td>{$data["hits"]}</td>";
+                $rows[] = "<td>" . $this->size_for_humans($data["memory_consumption"]) . "</td>";
+                $rows[] = $count > 1 ? "<td>{$file}</td>" : "<td>{$dir}/{$file}</td>";
+                $rows[] = '</tr>';
+            }
+
+            ++$id;
+        }
+
+        return implode("\n", $rows);
+    }
+
+    public function getScriptStatusCount()
+    {
+        return count($this->status["scripts"]);
+    }
+
+    public function getGraphDataSetJson()
+    {
+        $dataset = array();
+        $dataset['memory'] = array(
+            $this->status['memory_usage']['used_memory'],
+            $this->status['memory_usage']['free_memory'],
+            $this->status['memory_usage']['wasted_memory'],
+        );
+
+        $dataset['keys'] = array(
+            $this->status['opcache_statistics']['num_cached_keys'],
+            $this->status['opcache_statistics']['max_cached_keys'] - $this->status['opcache_statistics']['num_cached_keys'],
+            0
+        );
+
+        $dataset['hits'] = array(
+            $this->status['opcache_statistics']['misses'],
+            $this->status['opcache_statistics']['hits'],
+            0,
+        );
+
+        return json_encode($dataset);
+    }
+
+    public function getHumanUsedMemory()
+    {
+        return $this->size_for_humans($this->getUsedMemory());
+    }
+
+    public function getHumanFreeMemory()
+    {
+        return $this->size_for_humans($this->getFreeMemory());
+    }
+
+    public function getHumanWastedMemory()
+    {
+        return $this->size_for_humans($this->getWastedMemory());
+    }
+
+    public function getUsedMemory()
+    {
+        return $this->status['memory_usage']['used_memory'];
+    }
+
+    public function getFreeMemory()
+    {
+        return $this->status['memory_usage']['free_memory'];
+    }
+
+    public function getWastedMemory()
+    {
+        return $this->status['memory_usage']['wasted_memory'];
+    }
+
+    public function getWastedMemoryPercentage()
+    {
+        return number_format($this->status['memory_usage']['current_wasted_percentage'], 2);
+    }
+
+    private function size_for_humans($bytes)
+    {
+        if ($bytes > 1048576) {
+            return sprintf('%.2f&nbsp;MB', $bytes / 1048576);
+        } else {
+            if ($bytes > 1024) {
+                return sprintf('%.2f&nbsp;kB', $bytes / 1024);
+            } else {
+                return sprintf('%d&nbsp;bytes', $bytes);
+            }
+        }
+    }
+
 }
+
+$dataModel = new OpCacheDataModel();
 ?>
 <!DOCTYPE html>
 <meta charset="utf-8">
@@ -158,12 +348,11 @@ function toggleVisible(head, row) {
 	}
 }
 </script>
-<?php $title = 'PHP ' . phpversion() . " with OpCache {$config['version']['version']}"; ?>
-<title><?php echo $title; ?></title>
+<title><?= $dataModel->getPageTitle(); ?></title>
 </head>
 
 <body>
-	<h1><?php echo $title; ?></h1>
+	<h1><?= $dataModel->getPageTitle(); ?></h1>
 
 	<div class="tabs">
 
@@ -172,28 +361,7 @@ function toggleVisible(head, row) {
 			<label for="tab-status">Status</label>
 			<div class="content">
 				<table>
-					<?php
-					foreach ($status as $key => $value) {
-						if ($key === 'scripts') continue;
-
-						if (is_array($value)) {
-							foreach ($value as $k => $v) {
-								if ($v === false) $value = 'false';
-								if ($v === true) $value = 'true';
-								if ($k === 'used_memory' || $k === 'free_memory' || $k  ===  'wasted_memory') $v = size_for_humans($v);
-								if ($k === 'current_wasted_percentage' || $k === 'opcache_hit_rate') $v = number_format($v,2) . '%';
-								if ($k === 'blacklist_miss_ratio') $v = number_format($v, 2) . '%';
-								if ($k === 'start_time' || $k === 'last_restart_time') $v = ($v ? date(DATE_RFC822, $v) : 'never');
-
-								echo "<tr><th>$k</th><td>$v</td></tr>\n";
-							}
-							continue;
-						}
-						if ($value===false) $value = 'false';
-						if ($value===true) $value = 'true';
-						echo "<tr><th>$key</th><td>$value</td></tr>\n";
-					}
-					?>
+					<?= $dataModel->getStatusDataRows(); ?>
 				</table>
 			</div>
 		</div>
@@ -203,21 +371,14 @@ function toggleVisible(head, row) {
 			<label for="tab-config">Configuration</label>
 			<div class="content">
 				<table>
-					<?php
-					foreach ($config['directives'] as $key => $value) {
-						if ($value === false) $value = 'false';
-						if ($value === true) $value = 'true';
-						if ($key == 'opcache.memory_consumption') $value = size_for_humans($value);
-						echo "<tr><th>$key</th><td>$value</td></tr>\n";
-					}
-					?>
+					<?= $dataModel->getConfigDataRows(); ?>
 				</table>
 			</div>
 		</div>
 
 		<div class="tab">
 			<input type="radio" id="tab-scripts" name="tab-group-1">
-			<label for="tab-scripts">Scripts (<?php echo count($status["scripts"]); ?>)</label>
+			<label for="tab-scripts">Scripts (<?= $dataModel->getScriptStatusCount(); ?>)</label>
 			<div class="content">
 				<table style="font-size:0.8em;">
 					<tr>
@@ -225,41 +386,7 @@ function toggleVisible(head, row) {
 						<th width="20%">Memory</th>
 						<th width="70%">Path</th>
 					</tr>
-					<?php
-					foreach($status['scripts'] as $key=>$data) {
-						$dirs[dirname($key)][basename($key)]=$data;
-					}
-
-					asort($dirs);
-
-					$id = 1;
-
-					foreach($dirs as $dir => $files) {
-						$count = count($files);
-						$file_plural = $count > 1 ? 's' : null;
-						$m = 0;
-						foreach ($files as $file => $data) {
-							$m += $data["memory_consumption"];
-						}
-						$m = size_for_humans($m);
-
-						if ($count > 1) {
-							echo '<tr>';
-							echo "<th class=\"clickable\" id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} file{$file_plural}, {$m})</th>";
-							echo '</tr>';
-						}
-
-						foreach ($files as $file => $data) {
-							echo "<tr id=\"row-{$id}\">";
-							echo "<td>{$data["hits"]}</td>";
-							echo "<td>" .size_for_humans($data["memory_consumption"]). "</td>";
-							echo $count > 1 ? "<td>{$file}</td>" : "<td>{$dir}/{$file}</td>";
-							echo '</tr>';
-						}
-
-						++$id;
-					}
-					?>
+					<?= $dataModel->getScriptStatusRows(); ?>
 				</table>
 			</div>
 		</div>
@@ -276,19 +403,12 @@ function toggleVisible(head, row) {
 		<div id="stats"></div>
 	</div>
 
-	<?php
-	$mem = $status['memory_usage'];
-	$stats = $status['opcache_statistics'];
-	$free_keys = $stats['max_cached_keys'] - $stats['num_cached_keys'];
-	echo "
+    <?= "
 	<script>
-	var dataset = {
-		memory: [{$mem['used_memory']},{$mem['free_memory']},{$mem['wasted_memory']}],
-		keys: [{$stats['num_cached_keys']},{$free_keys},0],
-		hits: [{$stats['misses']},{$stats['hits']},0]
-	};
+	var dataset = {$dataModel->getGraphDataSetJson()};
 	";
-	?>
+    ?>
+
 	var width = 400,
 			height = 400,
 			radius = Math.min(width, height) / 2,
@@ -322,10 +442,10 @@ function toggleVisible(head, row) {
 	function set_text(t) {
 		if(t=="memory") {
 			d3.select("#stats").html(
-				"<table><tr><th style='background:#B41F1F;'>Used</th><td><?php echo size_for_humans($mem['used_memory'])?></td></tr>"+
-				"<tr><th style='background:#1FB437;'>Free</th><td><?php echo size_for_humans($mem['free_memory'])?></td></tr>"+
-				"<tr><th style='background:#ff7f0e;' rowspan=\"2\">Wasted</th><td><?php echo size_for_humans($mem['wasted_memory'])?></td></tr>"+
-				"<tr><td><?php echo number_format($mem['current_wasted_percentage'],2)?>%</td></tr></table>"
+				"<table><tr><th style='background:#B41F1F;'>Used</th><td><?= $dataModel->getHumanUsedMemory()?></td></tr>"+
+				"<tr><th style='background:#1FB437;'>Free</th><td><?= $dataModel->getHumanFreeMemory()?></td></tr>"+
+				"<tr><th style='background:#ff7f0e;' rowspan=\"2\">Wasted</th><td><?= $dataModel->getHumanWastedMemory()?></td></tr>"+
+				"<tr><td><?= $dataModel->getWastedMemoryPercentage()?>%</td></tr></table>"
 			);
 		} else if(t=="keys") {
 			d3.select("#stats").html(
