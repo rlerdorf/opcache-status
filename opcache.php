@@ -34,7 +34,7 @@ body {
 }
 
 h1 {
-	padding: 10px 0
+	padding: 10px 0;
 }
 
 table {
@@ -42,11 +42,11 @@ table {
 }
 
 tbody tr:nth-child(even) {
-	background-color: #eee
+	background-color: #eee;
 }
 
 p.capitalize {
-	text-transform: capitalize
+	text-transform: capitalize;
 }
 
 .tabs {
@@ -56,7 +56,7 @@ p.capitalize {
 }
 
 .tab {
-	float: left
+	float: left;
 }
 
 .tab label {
@@ -69,11 +69,11 @@ p.capitalize {
 }
 
 .tab [type=radio] {
-	display: none
+	display: none;
 }
 
 .tab th, .tab td {
-	padding: 6px 10px
+	padding: 6px 10px;
 }
 
 .content {
@@ -89,7 +89,7 @@ p.capitalize {
 }
 
 .content table {
-	width: 100%
+	width: 100%;
 }
 
 .content th, .tab:nth-child(3) td {
@@ -141,6 +141,9 @@ p.capitalize {
 #stats th, #stats td {
 	padding: 6px 10px;
 	font-size: 0.8em;
+}
+label {
+    cursor: pointer;
 }
 </style>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
