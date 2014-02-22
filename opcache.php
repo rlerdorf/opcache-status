@@ -70,7 +70,7 @@ body {
 }
 
 h1 {
-	padding: 10px 0
+	padding: 10px 0;
 }
 
 table {
@@ -78,11 +78,11 @@ table {
 }
 
 tbody tr:nth-child(even) {
-	background-color: #eee
+	background-color: #eee;
 }
 
 p.capitalize {
-	text-transform: capitalize
+	text-transform: capitalize;
 }
 
 .tabs {
@@ -92,7 +92,7 @@ p.capitalize {
 }
 
 .tab {
-	float: left
+	float: left;
 }
 
 .tab label {
@@ -105,7 +105,7 @@ p.capitalize {
 }
 
 .tab [type=radio] {
-	display: none
+	display: none;
 }
 
 .tab th, .tab td {
@@ -218,6 +218,10 @@ p.capitalize {
 
 #partition text {
 	pointer-events: none;
+}
+
+label {
+    cursor: pointer;
 }
 </style>
 <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
