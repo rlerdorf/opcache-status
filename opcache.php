@@ -169,6 +169,12 @@ class OpCacheDataModel
             0,
         );
 
+        $dataset['restarts'] = array(
+            $this->_status['opcache_statistics']['oom_restarts'],
+            $this->_status['opcache_statistics']['manual_restarts'],
+            $this->_status['opcache_statistics']['hash_restarts'],
+        );
+
         return json_encode($dataset);
     }
 
@@ -365,7 +371,7 @@ $dataModel = new OpCacheDataModel();
 
         #graph > form {
             position: absolute;
-            right: 110px;
+            right: 60px;
             top: -20px;
         }
 
@@ -505,6 +511,7 @@ $dataModel = new OpCacheDataModel();
                 <label><input type="radio" name="dataset" value="memory" checked> Memory</label>
                 <label><input type="radio" name="dataset" value="keys"> Keys</label>
                 <label><input type="radio" name="dataset" value="hits"> Hits</label>
+                <label><input type="radio" name="dataset" value="restarts"> Restarts</label>
             </form>
 
             <div id="stats"></div>
@@ -563,6 +570,12 @@ $dataModel = new OpCacheDataModel();
                 d3.select("#stats").html(
                     "<table><tr><th style='background:#B41F1F;'>Misses</th><td>"+dataset[t][0]+"</td></tr>"+
                     "<tr><th style='background:#1FB437;'>Cache Hits</th><td>"+dataset[t][1]+"</td></tr></table>"
+                );
+            } else if (t === "restarts") {
+                d3.select("#stats").html(
+                    "<table><tr><th style='background:#B41F1F;'>Memory</th><td>"+dataset[t][0]+"</td></tr>"+
+                        "<tr><th style='background:#1FB437;'>Manual</th><td>"+dataset[t][1]+"</td></tr>"+
+                        "<tr><th style='background:#ff7f0e;'>Keys</th><td>"+dataset[t][2]+"</td></tr></table>"
                 );
             }
         }
