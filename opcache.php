@@ -7,7 +7,7 @@ if (!extension_loaded('Zend OPcache')) {
 
 class OpCacheDataModel
 {
-    private $configuration;
+    private $_configuration;
     private $_status;
     private $_d3Scripts = array();
 
