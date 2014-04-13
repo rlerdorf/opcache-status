@@ -538,17 +538,17 @@ $dataModel = new OpCacheDataModel();
 
         var arc = d3.svg.arc().innerRadius(radius - 20).outerRadius(radius - 50);
         var svg = d3.select("#graph").append("svg")
-                .attr("width", width)
-                .attr("height", height)
-                .append("g")
-                .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+                    .attr("width", width)
+                    .attr("height", height)
+                    .append("g")
+                    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
         var path = svg.selectAll("path")
-                .data(pie(dataset.memory))
-                .enter().append("path")
-                .attr("fill", function(d, i) { return colour(i); })
-                .attr("d", arc)
-                .each(function(d) { this._current = d; }); // store the initial values
+                      .data(pie(dataset.memory))
+                      .enter().append("path")
+                      .attr("fill", function(d, i) { return colour(i); })
+                      .attr("d", arc)
+                      .each(function(d) { this._current = d; }); // store the initial values
 
         d3.selectAll("input").on("change", change);
         set_text("memory");
@@ -574,8 +574,8 @@ $dataModel = new OpCacheDataModel();
             } else if (t === "restarts") {
                 d3.select("#stats").html(
                     "<table><tr><th style='background:#B41F1F;'>Memory</th><td>"+dataset[t][0]+"</td></tr>"+
-                        "<tr><th style='background:#1FB437;'>Manual</th><td>"+dataset[t][1]+"</td></tr>"+
-                        "<tr><th style='background:#ff7f0e;'>Keys</th><td>"+dataset[t][2]+"</td></tr></table>"
+                    "<tr><th style='background:#1FB437;'>Manual</th><td>"+dataset[t][1]+"</td></tr>"+
+                    "<tr><th style='background:#ff7f0e;'>Keys</th><td>"+dataset[t][2]+"</td></tr></table>"
                 );
             }
         }
@@ -609,23 +609,23 @@ $dataModel = new OpCacheDataModel();
 
         function size_for_humans(bytes) {
             if (bytes > 1048576) {
-                    return (bytes/1048576).toFixed(2) + ' MB';
+                return (bytes/1048576).toFixed(2) + ' MB';
             } else if (bytes > 1024) {
-                    return (bytes/1024).toFixed(2) + ' KB';
+                return (bytes/1024).toFixed(2) + ' KB';
             } else return bytes + ' bytes';
         }
 
         var w = window.innerWidth,
-                h = window.innerHeight,
-                x = d3.scale.linear().range([0, w]),
-                y = d3.scale.linear().range([0, h]);
+            h = window.innerHeight,
+            x = d3.scale.linear().range([0, w]),
+            y = d3.scale.linear().range([0, h]);
 
         var vis = d3.select("#partition")
-                .style("width", w + "px")
-                .style("height", h + "px")
-                .append("svg:svg")
-                .attr("width", w)
-                .attr("height", h);
+                    .style("width", w + "px")
+                    .style("height", h + "px")
+                    .append("svg:svg")
+                    .attr("width", w)
+                    .attr("height", h);
 
         var partition = d3.layout.partition()
                 .value(function(d) { return d.size; });
@@ -633,27 +633,27 @@ $dataModel = new OpCacheDataModel();
         root = JSON.parse('<?php echo json_encode($dataModel->getD3Scripts()); ?>');
 
         var g = vis.selectAll("g")
-                .data(partition.nodes(root))
-                .enter().append("svg:g")
-                .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
-                .on("click", click);
+                   .data(partition.nodes(root))
+                   .enter().append("svg:g")
+                   .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
+                   .on("click", click);
 
         var kx = w / root.dx,
                 ky = h / 1;
 
         g.append("svg:rect")
-                .attr("width", root.dy * kx)
-                .attr("height", function(d) { return d.dx * ky; })
-                .attr("class", function(d) { return d.children ? "parent" : "child"; });
+         .attr("width", root.dy * kx)
+         .attr("height", function(d) { return d.dx * ky; })
+         .attr("class", function(d) { return d.children ? "parent" : "child"; });
 
         g.append("svg:text")
-                .attr("transform", transform)
-                .attr("dy", ".35em")
-                .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; })
-                .text(function(d) { return d.name; })
+         .attr("transform", transform)
+         .attr("dy", ".35em")
+         .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; })
+         .text(function(d) { return d.name; })
 
         d3.select(window)
-                .on("click", function() { click(root); })
+          .on("click", function() { click(root); })
 
         function click(d) {
             if (!d.children) return;
@@ -664,16 +664,16 @@ $dataModel = new OpCacheDataModel();
             y.domain([d.x, d.x + d.dx]);
 
             var t = g.transition()
-                    .duration(d3.event.altKey ? 7500 : 750)
-                    .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; });
+                     .duration(d3.event.altKey ? 7500 : 750)
+                     .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; });
 
             t.select("rect")
-                    .attr("width", d.dy * kx)
-                    .attr("height", function(d) { return d.dx * ky; });
+             .attr("width", d.dy * kx)
+             .attr("height", function(d) { return d.dx * ky; });
 
             t.select("text")
-                    .attr("transform", transform)
-                    .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; });
+             .attr("transform", transform)
+             .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; });
 
             d3.event.stopPropagation();
         }
