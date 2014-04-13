@@ -11,6 +11,8 @@ to keep it relatively small and to a single file so it is easy to
 drop into a directory anywhere without worrying about separate css/js/php
 files.
 
+[![Screenshot](https://raw.githubusercontent.com/jamesrwhite/opcache-status/improve-readme/screenshot.png)](https://raw.githubusercontent.com/jamesrwhite/opcache-status/improve-readme/screenshot.png)
+
 ### TODO
 
  - The ability to sort the list of cached scripts by the various columns
