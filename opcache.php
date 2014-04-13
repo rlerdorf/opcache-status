@@ -581,11 +581,22 @@ $dataModel = new OpCacheDataModel();
         }
 
         function change() {
-            if (typeof dataset[this.value] !== 'undefined') {
+            // Filter out any zero values to see if there is anything left
+            var remove_zero_values = dataset[this.value].filter(function(value) {
+                return value > 0;
+            });
+
+            // Skip if the value is undefined for some reason
+            if (typeof dataset[this.value] !== 'undefined' && remove_zero_values.length > 0) {
+                $('#graph').find('> svg').show();
                 path = path.data(pie(dataset[this.value])); // update the data
                 path.transition().duration(750).attrTween("d", arcTween); // redraw the arcs
-                set_text(this.value);
+            // Hide the graph if we can't draw it correctly, not ideal but this works
+            } else {
+                $('#graph').find('> svg').hide();
             }
+
+            set_text(this.value);
         }
 
         function arcTween(a) {
