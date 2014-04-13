@@ -21,6 +21,9 @@ function opcache_get_status() {
 			'blacklist_misses' => 0,
 			'blacklist_miss_ratio' => 0,
 			'opcache_hit_rate' => 99.81178017119,
+			'oom_restarts' => 0,
+			'manual_restarts' => 0,
+			'hash_restarts' => 0,
 		),
 		'scripts' =>
 		array (
