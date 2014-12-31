@@ -148,7 +148,7 @@ class OpCacheDataModel
         return count($this->_status["scripts"]);
     }
 
-    public function getGraphDataSetJson()
+    public function getGraphDataSet()
     {
         $dataset = array();
         $dataset['memory'] = array(
@@ -175,7 +175,42 @@ class OpCacheDataModel
             $this->_status['opcache_statistics']['hash_restarts'],
         );
 
-        return json_encode($dataset);
+        return $dataset;
+    }
+
+    public function getGraphDataSetJson()
+    {
+        return json_encode($this->getGraphDataSet());
+    }
+
+    public function getApiDataSetJson()
+    {
+        $graphDataset = $this->getGraphDataSet();
+
+        $apiDataset = array();
+        $apiDataset['memory'] = array(
+            'used' => $graphDataset['memory'][0],
+            'free' => $graphDataset['memory'][1],
+            'wasted' => $graphDataset['memory'][2],
+        );
+
+        $apiDataset['keys'] = array(
+            'cached' => $graphDataset['keys'][0],
+            'free' => $graphDataset['keys'][1],
+        );
+
+        $apiDataset['hits'] = array(
+            'misses' => $graphDataset['hits'][0],
+            'hits' => $graphDataset['hits'][1],
+        );
+
+        $apiDataset['restarts'] = array(
+            'oom' => $graphDataset['restarts'][0],
+            'manual' => $graphDataset['restarts'][1],
+            'hash' => $graphDataset['restarts'][2],
+        );
+
+        return json_encode($apiDataset);
     }
 
     public function getHumanUsedMemory()
@@ -265,6 +300,12 @@ class OpCacheDataModel
 }
 
 $dataModel = new OpCacheDataModel();
+
+if (isset($_SERVER['HTTP_ACCEPT']) && $_SERVER['HTTP_ACCEPT'] === 'application/json') {
+    header('Content-Type: application/json');
+    echo $dataModel->getApiDataSetJson();
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <meta charset="utf-8">
