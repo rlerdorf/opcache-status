@@ -99,7 +99,7 @@ var vis = d3.select("#partition")
 var partition = d3.layout.partition()
         .value(function(d) { return d.size; });
 
-root = JSON.parse(document.querySelector('#d3data');
+root = JSON.parse( document.querySelector('#d3data') );
 
 var g = vis.selectAll("g")
         .data(partition.nodes(root))
