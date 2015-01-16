@@ -88,8 +88,10 @@ $dataModel = new lerdorf\opcache\OpCacheDataModel();
 
     <div id="close-partition">&#10006; Close Visualisation</div>
     <div id="partition"></div>
-    <textarea id="dataset"><?php echo $dataModel->getGraphDataSetJson(); ?></textarea>
-    <textarea id="d3data"><?php echo json_encode($dataModel->getD3Scripts()); ?></textarea>
+    <div class="hidden">
+        <textarea id="dataset"><?php echo $dataModel->getGraphDataSetJson(); ?></textarea>
+        <textarea id="d3data"><?php echo json_encode($dataModel->getD3Scripts()); ?></textarea>
+    </div>
     <script src="assets/js/bodyscript.js"></script>
 </body>
 </html>
