@@ -1,4 +1,4 @@
-var dataset = document.querySelector('#dataset').innerHTML;
+var dataset = JSON.parse( document.querySelector('#dataset').innerHTML );
 var statsHTML = document.querySelector('#stats').innerHTML;
 
 var width = 400,
