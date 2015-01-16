@@ -1,7 +1,7 @@
 <?php
 
 namespace lerdorf\opcache;
-use Messages;
+use lerdorf\opcache\messages;
 
 if (!extension_loaded('Zend OPcache')) {
     echo sprintf('<div class="error">%s</div>', Messages/ERR_NO_ZEND_APC);
