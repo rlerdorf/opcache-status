@@ -1,4 +1,5 @@
 var dataset = document.querySelector('#dataset').innerHTML;
+var statsHTML = document.querySelector('#stats').innerHTML;
 
 var width = 400,
     height = 400,
