@@ -170,6 +170,9 @@ label {
 .smaller {
     font-size:0.8em;
 }
+.hidden {
+    display: none;
+}
 /*
  * Data-table classes
  */
