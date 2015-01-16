@@ -1,0 +1,187 @@
+body {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+#container {
+    width: 1024px;
+    margin: auto;
+    position: relative;
+}
+
+h1 {
+    padding: 10px 0;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #eee;
+}
+
+p.capitalize {
+    text-transform: capitalize;
+}
+
+.tabs {
+    position: relative;
+    float: left;
+    width: 60%;
+}
+
+.tab {
+    float: left;
+}
+
+.tab label {
+    background: #eee;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    margin-left: -1px;
+    position: relative;
+    left: 1px;
+}
+
+.tab [type=radio] {
+    display: none;
+}
+
+.tab th, .tab td {
+    padding: 8px 12px;
+}
+
+.content {
+    position: absolute;
+    top: 28px;
+    left: 0;
+    background: white;
+    border: 1px solid #ccc;
+    height: 450px;
+    width: 100%;
+    overflow: auto;
+}
+
+.content table {
+    width: 100%;
+}
+
+.content th, .tab:nth-child(3) td {
+    text-align: left;
+}
+
+.content td {
+    text-align: right;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+[type=radio]:checked ~ label {
+    background: white;
+    border-bottom: 1px solid white;
+    z-index: 2;
+}
+
+[type=radio]:checked ~ label ~ .content {
+    z-index: 1;
+}
+
+#graph {
+    float: right;
+    width: 40%;
+    position: relative;
+}
+
+#graph > form {
+    position: absolute;
+    right: 60px;
+    top: -20px;
+}
+
+#graph > svg {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+#stats {
+    position: absolute;
+    right: 125px;
+    top: 145px;
+}
+
+#stats th, #stats td {
+    padding: 6px 10px;
+    font-size: 0.8em;
+}
+
+#partition {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    top: 0;
+    left: 0;
+    background: #ddd;
+    display: none;
+}
+
+#close-partition {
+    display: none;
+    position: absolute;
+    z-index: 20;
+    right: 15px;
+    top: 15px;
+    background: #f9373d;
+    color: #fff;
+    padding: 12px 15px;
+}
+
+#close-partition:hover {
+    background: #D32F33;
+    cursor: pointer;
+}
+
+#partition rect {
+    stroke: #fff;
+    fill: #aaa;
+    fill-opacity: 1;
+}
+
+#partition rect.parent {
+    cursor: pointer;
+    fill: steelblue;
+}
+
+#partition text {
+    pointer-events: none;
+}
+
+label {
+    cursor: pointer;
+}
+.error{
+    background-color: #F2DEDE; color: #B94A48; padding: 1em;
+}
+.smaller {
+    font-size:0.8em;
+}
+.hidden {
+    display: none;
+}
+/*
+ * Data-table classes
+ */
+.err {
+  background:#B41F1F;
+}
+.warn {
+  background:#ff7f0e;
+}
+.fine {
+  background:#1FB437;
+}
