@@ -48,14 +48,14 @@ function set_text(t) {
 
 function change() {
     if (typeof dataset[this.value] !== 'undefined') {
-        if(dataset[this.value][0] <= 0) { dataset[this.value][0] = 0.00000001; }
-        if(dataset[this.value][1] <= 0) { dataset[this.value][1] = 0.00000001; }
-        if(dataset[this.value][2] <= 0) { dataset[this.value][2] = 0.00000001; }
+        for( i in dataset[this.value] ) {
+            if(dataset[this.value][i] <= 0) { dataset[this.value][i] = 0.00000001; }
+        }
         path = path.data(pie(dataset[this.value])); // update the data
         path.transition().duration(750).attrTween("d", arcTween); // redraw the arcs
-        if(dataset[this.value][0] <= 0.00000001) { dataset[this.value][0] = 0; }
-        if(dataset[this.value][1] <= 0.00000001) { dataset[this.value][1] = 0; }
-        if(dataset[this.value][2] <= 0.00000001) { dataset[this.value][2] = 0; }
+        for( i in dataset[this.value] ) {
+            if(dataset[this.value][i] <= 0.00000001) { dataset[this.value][i] = 0; }
+        }
         
         set_text(this.value);
     }
