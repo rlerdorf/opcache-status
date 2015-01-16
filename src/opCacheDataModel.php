@@ -1,6 +1,6 @@
 <?php
 
-namespace lerdorf;
+namespace lerdorf\opcache;
 use Messages;
 
 if (!extension_loaded('Zend OPcache')) {
