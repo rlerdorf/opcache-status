@@ -1,6 +1,7 @@
 opcache-status
 ==============
 
+#Original
 A one-page opcache status page for the PHP 5.5 opcode cache.
 
 You don't need the opcode cache installed to help out with this.
@@ -17,3 +18,5 @@ Some things I'd like to see:
  - A better layout that can accommodate more of the script data without looking cluttered
  - A tuning suggestion tab (need to add a couple of things to the opcache output first though)
 
+#Revisions
+Separated HTML, CSS & JS because caching helps websites use less bandwidth and visual style should not relate to raw data
