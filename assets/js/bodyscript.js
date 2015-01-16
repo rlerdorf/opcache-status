@@ -1,5 +1,6 @@
-var dataset = JSON.parse( document.querySelector('#dataset').innerHTML );
 var statsHTML = document.querySelector('#stats').innerHTML;
+root = JSON.parse( document.querySelector('#d3data').innerHTML );
+var dataset = JSON.parse( document.querySelector('#dataset').innerHTML );
 
 var width = 400,
     height = 400,
@@ -10,30 +11,15 @@ d3.scale.customColours = function() {
     return d3.scale.ordinal().range(colours);
 };
 
-var colour = d3.scale.customColours();
-var pie = d3.layout.pie().sort(null);
-
-var arc = d3.svg.arc().innerRadius(radius - 20).outerRadius(radius - 50);
-var svg = d3.select("#graph").append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .append("g")
-        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
-var path = svg.selectAll("path")
-        .data(pie(dataset.memory))
-        .enter().append("path")
-        .attr("fill", function(d, i) { return colour(i); })
-        .attr("d", arc)
-        .each(function(d) { this._current = d; }); // store the initial values
-
-d3.selectAll("input").on("change", change);
-set_text("memory");
-
 function set_text(t) {
     if (t === "memory") {
-        d3.select("#stats").html(
-          statsHTML
+        d3.select("#stats").html( 
+            '<table>'+
+            '<tr><th class="err">Used</th><td>'+size_for_humans(dataset[t][0])+'</td></tr>'+
+            '<tr><th class="fine">Free</th><td>'+size_for_humans(dataset[t][1])+'</td></tr>'+
+            '<tr><th class="warn" rowspan="2">Wasted</th><td>'+size_for_humans(dataset[t][2])+'</td></tr>'+
+            '</table>'
+            //statsHTML 
         );
     } else if (t === "keys") {
         d3.select("#stats").html(
@@ -62,8 +48,15 @@ function set_text(t) {
 
 function change() {
     if (typeof dataset[this.value] !== 'undefined') {
+        if(dataset[this.value][0] <= 0) { dataset[this.value][0] = 0.00000001; }
+        if(dataset[this.value][1] <= 0) { dataset[this.value][1] = 0.00000001; }
+        if(dataset[this.value][2] <= 0) { dataset[this.value][2] = 0.00000001; }
         path = path.data(pie(dataset[this.value])); // update the data
         path.transition().duration(750).attrTween("d", arcTween); // redraw the arcs
+        if(dataset[this.value][0] <= 0.00000001) { dataset[this.value][0] = 0; }
+        if(dataset[this.value][1] <= 0.00000001) { dataset[this.value][1] = 0; }
+        if(dataset[this.value][2] <= 0.00000001) { dataset[this.value][2] = 0; }
+        
         set_text(this.value);
     }
 }
@@ -77,52 +70,14 @@ function arcTween(a) {
 }
 
 function size_for_humans(bytes) {
-    if (bytes > 1048576) {
-            return (bytes/1048576).toFixed(2) + ' MB';
+    if (bytes > (1024*1024*1024)) {
+            return (bytes/(1024*1024*1024)).toFixed(2) + ' GB';
+    } else if (bytes > (1024*1024)) {
+            return (bytes/(1024*1024)).toFixed(2) + ' MB';
     } else if (bytes > 1024) {
             return (bytes/1024).toFixed(2) + ' KB';
     } else return bytes + ' bytes';
 }
-
-var w = window.innerWidth,
-        h = window.innerHeight,
-        x = d3.scale.linear().range([0, w]),
-        y = d3.scale.linear().range([0, h]);
-
-var vis = d3.select("#partition")
-        .style("width", w + "px")
-        .style("height", h + "px")
-        .append("svg:svg")
-        .attr("width", w)
-        .attr("height", h);
-
-var partition = d3.layout.partition()
-        .value(function(d) { return d.size; });
-
-root = JSON.parse( document.querySelector('#d3data') );
-
-var g = vis.selectAll("g")
-        .data(partition.nodes(root))
-        .enter().append("svg:g")
-        .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
-        .on("click", click);
-
-var kx = w / root.dx,
-        ky = h / 1;
-
-g.append("svg:rect")
-        .attr("width", root.dy * kx)
-        .attr("height", function(d) { return d.dx * ky; })
-        .attr("class", function(d) { return d.children ? "parent" : "child"; });
-
-g.append("svg:text")
-        .attr("transform", transform)
-        .attr("dy", ".35em")
-        .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; })
-        .text(function(d) { return d.name; })
-
-d3.select(window)
-        .on("click", function() { click(root); })
 
 function click(d) {
     if (!d.children) return;
@@ -150,6 +105,68 @@ function click(d) {
 function transform(d) {
     return "translate(8," + d.dx * ky / 2 + ")";
 }
+
+//
+// Code...
+//
+var colour = d3.scale.customColours();
+var pie = d3.layout.pie().sort(null);
+
+var arc = d3.svg.arc().innerRadius(radius - 20).outerRadius(radius - 50);
+var svg = d3.select("#graph").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+var path = svg.selectAll("path")
+        .data(pie(dataset.memory))
+        .enter().append("path")
+        .attr("fill", function(d, i) { return colour(i); })
+        .attr("d", arc)
+        .each(function(d) { this._current = d; }); // store the initial values
+
+d3.selectAll("input").on("change", change);
+set_text("memory");
+
+var w = window.innerWidth,
+        h = window.innerHeight,
+        x = d3.scale.linear().range([0, w]),
+        y = d3.scale.linear().range([0, h]);
+
+var vis = d3.select("#partition")
+        .style("width", w + "px")
+        .style("height", h + "px")
+        .append("svg:svg")
+        .attr("width", w)
+        .attr("height", h);
+
+var partition = d3.layout.partition()
+        .value(function(d) { return d.size; });
+
+var g = vis.selectAll("g")
+        .data(partition.nodes(root))
+        .enter().append("svg:g")
+        .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
+        .on("click", click);
+
+var kx = w / root.dx,
+        ky = h / 1;
+
+g.append("svg:rect")
+        .attr("width", root.dy * kx)
+        .attr("height", function(d) { return d.dx * ky; })
+        .attr("class", function(d) { return d.children ? "parent" : "child"; });
+
+g.append("svg:text")
+        .attr("transform", transform)
+        .attr("dy", ".35em")
+        .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; })
+        .text(function(d) { return d.name; })
+
+d3.select(window)
+        .on("click", function() { click(root); })
+
 
 $(document).ready(function() {
 
