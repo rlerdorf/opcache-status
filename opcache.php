@@ -1,5 +1,7 @@
 <?php
 
+define('THOUSAND_SEPARATOR',true);
+
 if (!extension_loaded('Zend OPcache')) {
     echo '<div style="background-color: #F2DEDE; color: #B94A48; padding: 1em;">You do not have the Zend OPcache extension loaded, sample data is being shown instead.</div>';
     require 'data-sample.php';
@@ -54,6 +56,9 @@ class OpCacheDataModel
                     }
                     if ($k === 'start_time' || $k === 'last_restart_time') {
                         $v = ($v ? date(DATE_RFC822, $v) : 'never');
+                    }
+                    if (THOUSAND_SEPARATOR === true && is_int($v)) {
+                        $v = number_format($v);
                     }
 
                     $rows[] = "<tr><th>$k</th><td>$v</td></tr>\n";
@@ -131,7 +136,7 @@ class OpCacheDataModel
 
             foreach ($files as $file => $data) {
                 $rows[] = "<tr id=\"row-{$id}\">";
-                $rows[] = "<td>{$data["hits"]}</td>";
+                $rows[] = "<td>" . $this->_format_value($data["hits"]) . "</td>";
                 $rows[] = "<td>" . $this->_size_for_humans($data["memory_consumption"]) . "</td>";
                 $rows[] = $count > 1 ? "<td>{$file}</td>" : "<td>{$dir}/{$file}</td>";
                 $rows[] = '</tr>';
@@ -174,6 +179,12 @@ class OpCacheDataModel
             $this->_status['opcache_statistics']['manual_restarts'],
             $this->_status['opcache_statistics']['hash_restarts'],
         );
+
+        if (THOUSAND_SEPARATOR === true) {
+            $dataset['TSEP'] = 1;
+        } else {
+            $dataset['TSEP'] = 0;
+        }
 
         return json_encode($dataset);
     }
@@ -231,6 +242,15 @@ class OpCacheDataModel
         }
 
         return $array;
+    }
+
+    private function _format_value($value)
+    {
+        if (THOUSAND_SEPARATOR === true) {
+            return number_format($value);
+        } else {
+            return $value;
+        }
     }
 
     private function _size_for_humans($bytes)
@@ -563,13 +583,13 @@ $dataModel = new OpCacheDataModel();
                 );
             } else if (t === "keys") {
                 d3.select("#stats").html(
-                    "<table><tr><th style='background:#B41F1F;'>Cached keys</th><td>"+dataset[t][0]+"</td></tr>"+
-                    "<tr><th style='background:#1FB437;'>Free Keys</th><td>"+dataset[t][1]+"</td></tr></table>"
+                    "<table><tr><th style='background:#B41F1F;'>Cached keys</th><td>"+format_value(dataset[t][0])+"</td></tr>"+
+                    "<tr><th style='background:#1FB437;'>Free Keys</th><td>"+format_value(dataset[t][1])+"</td></tr></table>"
                 );
             } else if (t === "hits") {
                 d3.select("#stats").html(
-                    "<table><tr><th style='background:#B41F1F;'>Misses</th><td>"+dataset[t][0]+"</td></tr>"+
-                    "<tr><th style='background:#1FB437;'>Cache Hits</th><td>"+dataset[t][1]+"</td></tr></table>"
+                    "<table><tr><th style='background:#B41F1F;'>Misses</th><td>"+format_value(dataset[t][0])+"</td></tr>"+
+                    "<tr><th style='background:#1FB437;'>Cache Hits</th><td>"+format_value(dataset[t][1])+"</td></tr></table>"
                 );
             } else if (t === "restarts") {
                 d3.select("#stats").html(
@@ -602,6 +622,14 @@ $dataModel = new OpCacheDataModel();
             } else if (bytes > 1024) {
                     return (bytes/1024).toFixed(2) + ' KB';
             } else return bytes + ' bytes';
+        }
+
+        function format_value(value) {
+            if (dataset["TSEP"] == 1) {
+                return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            } else {
+                return value;
+            }
         }
 
         var w = window.innerWidth,
