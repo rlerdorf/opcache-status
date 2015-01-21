@@ -1,5 +1,5 @@
-opcache-status
-==============
+OPcache Status  [![Packagist](http://img.shields.io/packagist/v/rlerdorf/opcache-status.svg)](https://packagist.org/packages/rlerdorf/opcache-status)
+---------------
 
 A one-page opcache status page for the PHP 5.5 opcode cache.
 
@@ -11,7 +11,9 @@ to keep it relatively small and to a single file so it is easy to
 drop into a directory anywhere without worrying about separate css/js/php
 files.
 
-Some things I'd like to see:
+[![Screenshot](https://raw.githubusercontent.com/jamesrwhite/opcache-status/improve-readme/screenshot.png)](https://raw.githubusercontent.com/jamesrwhite/opcache-status/improve-readme/screenshot.png)
+
+### TODO
 
  - The ability to sort the list of cached scripts by the various columns
  - A better layout that can accommodate more of the script data without looking cluttered
