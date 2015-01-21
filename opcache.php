@@ -224,9 +224,9 @@ class OpCacheDataModel
         return number_format($this->_status['memory_usage']['current_wasted_percentage'], 2);
     }
 
-    public function getD3ScriptsJson()
+    public function getD3Scripts()
     {
-        return json_encode($this->_d3Scripts);
+        return $this->_d3Scripts;
     }
 
     private function _processPartition($value, $name = null)
@@ -281,15 +281,15 @@ class OpCacheDataModel
         $array[array_shift($keys)] = $value;
         return $array;
     }
-    
-    public static function printStats() 
-    {
-        $dataModel = new self();
-        return <<<HERE
-<!DOCTYPE html><meta charset="utf-8">
+
+}
+
+$dataModel = new OpCacheDataModel();
+?>
+<!DOCTYPE html>
+<meta charset="utf-8">
 <html>
-    <head>
-        <title>{$dataModel->getPageTitle()}</title>
+<head>
     <style>
         body {
             font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
@@ -458,10 +458,8 @@ class OpCacheDataModel
             cursor: pointer;
         }
     </style>
-        
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    
     <script>
         var hidden = {};
         function toggleVisible(head, row) {
@@ -476,11 +474,12 @@ class OpCacheDataModel
             }
         }
     </script>
-    
-    </head>
-    <body>
+    <title><?php echo $dataModel->getPageTitle(); ?></title>
+</head>
+
+<body>
     <div id="container">
-        <h1>{$dataModel->getPageTitle()}</h1>
+        <h1><?php echo $dataModel->getPageTitle(); ?></h1>
 
         <div class="tabs">
 
@@ -489,7 +488,7 @@ class OpCacheDataModel
                 <label for="tab-status">Status</label>
                 <div class="content">
                     <table>
-                        {$dataModel->getStatusDataRows()}
+                        <?php echo $dataModel->getStatusDataRows(); ?>
                     </table>
                 </div>
             </div>
@@ -499,14 +498,14 @@ class OpCacheDataModel
                 <label for="tab-config">Configuration</label>
                 <div class="content">
                     <table>
-                        {$dataModel->getConfigDataRows()}
+                        <?php echo $dataModel->getConfigDataRows(); ?>
                     </table>
                 </div>
             </div>
 
             <div class="tab">
                 <input type="radio" id="tab-scripts" name="tab-group-1">
-                <label for="tab-scripts">Scripts ({$dataModel->getScriptStatusCount()})</label>
+                <label for="tab-scripts">Scripts (<?php echo $dataModel->getScriptStatusCount(); ?>)</label>
                 <div class="content">
                     <table style="font-size:0.8em;">
                         <tr>
@@ -514,7 +513,7 @@ class OpCacheDataModel
                             <th width="20%">Memory</th>
                             <th width="70%">Path</th>
                         </tr>
-                        {$dataModel->getScriptStatusRows()}
+                        <?php echo $dataModel->getScriptStatusRows(); ?>
                     </table>
                 </div>
             </div>
@@ -543,7 +542,7 @@ class OpCacheDataModel
     <div id="partition"></div>
 
     <script>
-        var dataset = {$dataModel->getGraphDataSetJson()};
+        var dataset = <?php echo $dataModel->getGraphDataSetJson(); ?>
 
         var width = 400,
             height = 400,
@@ -577,10 +576,10 @@ class OpCacheDataModel
         function set_text(t) {
             if (t === "memory") {
                 d3.select("#stats").html(
-                    "<table><tr><th style='background:#B41F1F;'>Used</th><td>{$dataModel->getHumanUsedMemory()}</td></tr>"+
-                    "<tr><th style='background:#1FB437;'>Free</th><td>{$dataModel->getHumanFreeMemory()}</td></tr>"+
-                    "<tr><th style='background:#ff7f0e;' rowspan=\"2\">Wasted</th><td>{$dataModel->getHumanWastedMemory()}</td></tr>"+
-                    "<tr><td>{$dataModel->getWastedMemoryPercentage()}%</td></tr></table>"
+                    "<table><tr><th style='background:#B41F1F;'>Used</th><td><?php echo $dataModel->getHumanUsedMemory()?></td></tr>"+
+                    "<tr><th style='background:#1FB437;'>Free</th><td><?php echo $dataModel->getHumanFreeMemory()?></td></tr>"+
+                    "<tr><th style='background:#ff7f0e;' rowspan=\"2\">Wasted</th><td><?php echo $dataModel->getHumanWastedMemory()?></td></tr>"+
+                    "<tr><td><?php echo $dataModel->getWastedMemoryPercentage()?>%</td></tr></table>"
                 );
             } else if (t === "keys") {
                 d3.select("#stats").html(
@@ -659,7 +658,7 @@ class OpCacheDataModel
         var partition = d3.layout.partition()
                 .value(function(d) { return d.size; });
 
-        root = {$dataModel->getD3ScriptsJson()};
+        root = JSON.parse('<?php echo json_encode($dataModel->getD3Scripts()); ?>');
 
         var g = vis.selectAll("g")
                    .data(partition.nodes(root))
@@ -741,8 +740,5 @@ class OpCacheDataModel
 
         });
     </script>
-    </body>
+</body>
 </html>
-HERE;
-    }
-}
