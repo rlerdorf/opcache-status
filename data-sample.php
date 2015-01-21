@@ -21,6 +21,9 @@ function opcache_get_status() {
 			'blacklist_misses' => 0,
 			'blacklist_miss_ratio' => 0,
 			'opcache_hit_rate' => 99.81178017119,
+			'oom_restarts' => 0,
+			'manual_restarts' => 0,
+			'hash_restarts' => 0,
 		),
 		'scripts' =>
 		array (
@@ -29,8 +32,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/manual/en/toc/faq.inc',
 				'hits' => 9,
 				'memory_consumption' => 5680,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1363345905,
 			),
@@ -39,8 +41,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/downloads.php',
 				'hits' => 86,
 				'memory_consumption' => 9488,
-				'last_used' => 'Sat Mar 16 12:03:47 2013
-				',
+				'last_used' => 'Sat Mar 16 12:03:47 2013',
 				'last_used_timestamp' => 1363460627,
 				'timestamp' => 1355102402,
 			),
@@ -49,8 +50,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/languages.inc',
 				'hits' => 5605,
 				'memory_consumption' => 16984,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1362994804,
 			),
@@ -59,8 +59,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/header.inc',
 				'hits' => 9,
 				'memory_consumption' => 20352,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1357938001,
 			),
@@ -69,8 +68,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/manual/en/toc/getting-started.inc',
 				'hits' => 9,
 				'memory_consumption' => 1936,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1363345409,
 			),
@@ -79,8 +77,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/manual/en/faq.php',
 				'hits' => 122,
 				'memory_consumption' => 5152,
-				'last_used' => 'Sat Mar 16 12:06:15 2013
-				',
+				'last_used' => 'Sat Mar 16 12:06:15 2013',
 				'last_used_timestamp' => 1363460775,
 				'timestamp' => 1363345906,
 			),
@@ -89,8 +86,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/footer.inc',
 				'hits' => 9,
 				'memory_consumption' => 1976,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1347648001,
 			),
@@ -99,8 +95,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/site.inc',
 				'hits' => 5605,
 				'memory_consumption' => 63488,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1354724402,
 			),
@@ -109,8 +104,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/mirrors.inc',
 				'hits' => 5605,
 				'memory_consumption' => 96160,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1363419613,
 			),
@@ -119,8 +113,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/manual/en/toc/refs.basic.vartype.inc',
 				'hits' => 9,
 				'memory_consumption' => 5032,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1363345844,
 			),
@@ -129,8 +122,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/layout.inc',
 				'hits' => 5605,
 				'memory_consumption' => 145704,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1356610801,
 			),
@@ -139,8 +131,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/sites.php',
 				'hits' => 73,
 				'memory_consumption' => 2024,
-				'last_used' => 'Sat Mar 16 12:10:10 2013
-				',
+				'last_used' => 'Sat Mar 16 12:10:10 2013',
 				'last_used_timestamp' => 1363461010,
 				'timestamp' => 1354724402,
 			),
@@ -149,8 +140,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/search.php',
 				'hits' => 3083,
 				'memory_consumption' => 19728,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1347648005,
 			),
@@ -159,8 +149,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/manual/en/toc/langref.inc',
 				'hits' => 49,
 				'memory_consumption' => 7416,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1363345411,
 			),
@@ -169,8 +158,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/manual/en/toc/index.inc',
 				'hits' => 132,
 				'memory_consumption' => 4680,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1363345409,
 			),
@@ -179,8 +167,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/docs.php',
 				'hits' => 73,
 				'memory_consumption' => 4536,
-				'last_used' => 'Sat Mar 16 12:04:36 2013
-				',
+				'last_used' => 'Sat Mar 16 12:04:36 2013',
 				'last_used_timestamp' => 1363460676,
 				'timestamp' => 1347648000,
 			),
@@ -189,8 +176,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/shared-manual.inc',
 				'hits' => 122,
 				'memory_consumption' => 107688,
-				'last_used' => 'Sat Mar 16 12:06:15 2013
-				',
+				'last_used' => 'Sat Mar 16 12:06:15 2013',
 				'last_used_timestamp' => 1363460775,
 				'timestamp' => 1357938001,
 			),
@@ -199,8 +185,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/mozopensearch.inc',
 				'hits' => 14,
 				'memory_consumption' => 1232,
-				'last_used' => 'Sat Mar 16 12:00:34 2013
-				',
+				'last_used' => 'Sat Mar 16 12:00:34 2013',
 				'last_used_timestamp' => 1363460434,
 				'timestamp' => 1347648001,
 			),
@@ -209,8 +194,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/ip-to-country.inc',
 				'hits' => 5605,
 				'memory_consumption' => 21840,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1347648001,
 			),
@@ -219,8 +203,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/version.inc',
 				'hits' => 775,
 				'memory_consumption' => 7880,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1363321202,
 			),
@@ -229,8 +212,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/errors.inc',
 				'hits' => 691,
 				'memory_consumption' => 59888,
-				'last_used' => 'Sat Mar 16 12:10:33 2013
-				',
+				'last_used' => 'Sat Mar 16 12:10:33 2013',
 				'last_used_timestamp' => 1363461033,
 				'timestamp' => 1347648001,
 			),
@@ -239,8 +221,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/countries.inc',
 				'hits' => 5605,
 				'memory_consumption' => 31184,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1363419614,
 			),
@@ -249,8 +230,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/error.php',
 				'hits' => 691,
 				'memory_consumption' => 61952,
-				'last_used' => 'Sat Mar 16 12:10:33 2013
-				',
+				'last_used' => 'Sat Mar 16 12:10:33 2013',
 				'last_used_timestamp' => 1363461033,
 				'timestamp' => 1347648000,
 			),
@@ -259,8 +239,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/manual/en/toc/refs.basic.text.inc',
 				'hits' => 9,
 				'memory_consumption' => 3312,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1363345831,
 			),
@@ -269,8 +248,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/loadavg.inc',
 				'hits' => 3775,
 				'memory_consumption' => 12184,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1354738801,
 			),
@@ -279,8 +257,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/prepend.inc',
 				'hits' => 5605,
 				'memory_consumption' => 23432,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1347648001,
 			),
@@ -289,8 +266,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/o.php',
 				'hits' => 1,
 				'memory_consumption' => 13424,
-				'last_used' => 'Sat Mar 16 18:11:21 2013
-				',
+				'last_used' => 'Sat Mar 16 18:11:21 2013',
 				'last_used_timestamp' => 1363482681,
 				'timestamp' => 1363482654,
 			),
@@ -299,8 +275,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/pregen-events.inc',
 				'hits' => 1141,
 				'memory_consumption' => 840,
-				'last_used' => 'Sat Mar 16 12:15:07 2013
-				',
+				'last_used' => 'Sat Mar 16 12:15:07 2013',
 				'last_used_timestamp' => 1363461307,
 				'timestamp' => 1363419615,
 			),
@@ -309,8 +284,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/opcache.php',
 				'hits' => 0,
 				'memory_consumption' => 13944,
-				'last_used' => 'Sun Mar 17 01:22:31 2013
-				',
+				'last_used' => 'Sun Mar 17 01:22:31 2013',
 				'last_used_timestamp' => 1363508551,
 				'timestamp' => 1363508542,
 			),
@@ -319,8 +293,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/manual/en/toc/refs.calendar.inc',
 				'hits' => 9,
 				'memory_consumption' => 2264,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1363345437,
 			),
@@ -329,8 +302,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/manual/en/toc/security.inc',
 				'hits' => 19,
 				'memory_consumption' => 5352,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1363345419,
 			),
@@ -339,8 +311,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/pregen-news.inc',
 				'hits' => 1161,
 				'memory_consumption' => 57896,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1363419615,
 			),
@@ -349,8 +320,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/my.php',
 				'hits' => 34,
 				'memory_consumption' => 22640,
-				'last_used' => 'Sat Mar 16 12:15:15 2013
-				',
+				'last_used' => 'Sat Mar 16 12:15:15 2013',
 				'last_used_timestamp' => 1363461315,
 				'timestamp' => 1354724402,
 			),
@@ -359,8 +329,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/pregen-confs.inc',
 				'hits' => 678,
 				'memory_consumption' => 1400,
-				'last_used' => 'Sat Mar 16 12:02:49 2013
-				',
+				'last_used' => 'Sat Mar 16 12:02:49 2013',
 				'last_used_timestamp' => 1363460569,
 				'timestamp' => 1363419615,
 			),
@@ -369,8 +338,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/index.php',
 				'hits' => 1,
 				'memory_consumption' => 744,
-				'last_used' => 'Sat Mar 16 12:01:20 2013
-				',
+				'last_used' => 'Sat Mar 16 12:01:20 2013',
 				'last_used_timestamp' => 1363460480,
 				'timestamp' => 1358644238,
 			),
@@ -379,8 +347,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/index-stable.php',
 				'hits' => 679,
 				'memory_consumption' => 22208,
-				'last_used' => 'Sat Mar 16 12:02:49 2013
-				',
+				'last_used' => 'Sat Mar 16 12:02:49 2013',
 				'last_used_timestamp' => 1363460569,
 				'timestamp' => 1347648003,
 			),
@@ -389,8 +356,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/conferences/index.php',
 				'hits' => 462,
 				'memory_consumption' => 3872,
-				'last_used' => 'Sat Mar 16 12:15:07 2013
-				',
+				'last_used' => 'Sat Mar 16 12:15:07 2013',
 				'last_used_timestamp' => 1363461307,
 				'timestamp' => 1347648000,
 			),
@@ -399,8 +365,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/support.php',
 				'hits' => 73,
 				'memory_consumption' => 1912,
-				'last_used' => 'Sat Mar 16 12:06:40 2013
-				',
+				'last_used' => 'Sat Mar 16 12:06:40 2013',
 				'last_used_timestamp' => 1363460800,
 				'timestamp' => 1347648005,
 			),
@@ -409,8 +374,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/op.php',
 				'hits' => 0,
 				'memory_consumption' => 1448,
-				'last_used' => 'Sun Mar 17 01:34:33 2013
-				',
+				'last_used' => 'Sun Mar 17 01:34:33 2013',
 				'last_used_timestamp' => 1363509273,
 				'timestamp' => 1363509263,
 			),
@@ -419,8 +383,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/posttohost.inc',
 				'hits' => 342,
 				'memory_consumption' => 3824,
-				'last_used' => 'Sat Mar 16 12:09:18 2013
-				',
+				'last_used' => 'Sat Mar 16 12:09:18 2013',
 				'last_used_timestamp' => 1363460958,
 				'timestamp' => 1347648001,
 			),
@@ -429,8 +392,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/langchooser.inc',
 				'hits' => 5605,
 				'memory_consumption' => 23784,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1347648001,
 			),
@@ -439,8 +401,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/manual-lookup.inc',
 				'hits' => 624,
 				'memory_consumption' => 26648,
-				'last_used' => 'Sat Mar 16 12:10:33 2013
-				',
+				'last_used' => 'Sat Mar 16 12:10:33 2013',
 				'last_used_timestamp' => 1363461033,
 				'timestamp' => 1354750802,
 			),
@@ -449,8 +410,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/mailing-lists.php',
 				'hits' => 342,
 				'memory_consumption' => 31576,
-				'last_used' => 'Sat Mar 16 12:09:18 2013
-				',
+				'last_used' => 'Sat Mar 16 12:09:18 2013',
 				'last_used_timestamp' => 1363460958,
 				'timestamp' => 1361200802,
 			),
@@ -459,8 +419,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/last_updated.inc',
 				'hits' => 5605,
 				'memory_consumption' => 840,
-				'last_used' => 'Sat Mar 16 12:16:31 2013
-				',
+				'last_used' => 'Sat Mar 16 12:16:31 2013',
 				'last_used_timestamp' => 1363461391,
 				'timestamp' => 1363419675,
 			),
@@ -469,8 +428,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/include/email-validation.inc',
 				'hits' => 342,
 				'memory_consumption' => 9168,
-				'last_used' => 'Sat Mar 16 12:09:18 2013
-				',
+				'last_used' => 'Sat Mar 16 12:09:18 2013',
 				'last_used_timestamp' => 1363460958,
 				'timestamp' => 1362175205,
 			),
@@ -479,8 +437,7 @@ function opcache_get_status() {
 				'full_path' => '/var/www/phpweb/index.php',
 				'hits' => 679,
 				'memory_consumption' => 1840,
-				'last_used' => 'Sat Mar 16 12:02:49 2013
-				',
+				'last_used' => 'Sat Mar 16 12:02:49 2013',
 				'last_used_timestamp' => 1363460569,
 				'timestamp' => 1347648003,
 			),
