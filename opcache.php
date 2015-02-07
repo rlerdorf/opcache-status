@@ -542,7 +542,7 @@ $dataModel = new OpCacheDataModel();
     <div id="partition"></div>
 
     <script>
-        var dataset = <?php echo $dataModel->getGraphDataSetJson(); ?>
+        var dataset = <?php echo $dataModel->getGraphDataSetJson(); ?>;
 
         var width = 400,
             height = 400,
