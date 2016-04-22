@@ -282,9 +282,18 @@ class OpCacheDataModel
         return $array;
     }
 
+    public function clearCache() {
+        opcache_reset();
+    }
+
 }
 
 $dataModel = new OpCacheDataModel();
+
+if (isset($_GET['clear']) && $_GET['clear'] == 1) {
+    $dataModel->clearCache();
+    header('Location: ' . $_SERVER['PHP_SELF']);
+}
 ?>
 <!DOCTYPE html>
 <meta charset="utf-8">
@@ -457,6 +466,12 @@ $dataModel = new OpCacheDataModel();
         label {
             cursor: pointer;
         }
+
+        .actions {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #cacaca;
+        }
     </style>
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
@@ -480,6 +495,10 @@ $dataModel = new OpCacheDataModel();
 <body>
     <div id="container">
         <h1><?php echo $dataModel->getPageTitle(); ?></h1>
+
+        <div class="actions">
+            <a href="?clear=1">Clear cache</a>
+        </div>
 
         <div class="tabs">
 
