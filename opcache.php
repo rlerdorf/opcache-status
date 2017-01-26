@@ -7,6 +7,12 @@ if (!extension_loaded('Zend OPcache')) {
     require 'data-sample.php';
 }
 
+if (isset($_GET['invalidate'])) {
+    opcache_reset();
+    header('Location: .');
+    die;
+}
+
 class OpCacheDataModel
 {
     private $_configuration;
@@ -457,6 +463,10 @@ $dataModel = new OpCacheDataModel();
         label {
             cursor: pointer;
         }
+        
+        #invalidate {
+            float: right;
+        }
     </style>
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
@@ -479,6 +489,8 @@ $dataModel = new OpCacheDataModel();
 
 <body>
     <div id="container">
+        <a id="invalidate" href="?invalidate" onclick="return confirm('Confirm invalidation');">Invalidate</a>
+    
         <h1><?php echo $dataModel->getPageTitle(); ?></h1>
 
         <div class="tabs">
