@@ -28,7 +28,7 @@ class OpCacheDataModel
     {
         $rows = array();
 
-        if (empty($this->_status)) {
+        if ($this->_status === false) {
             return "<br> Opcache disabled";
         }
 
@@ -104,7 +104,7 @@ class OpCacheDataModel
     public function getScriptStatusRows()
     {
         
-        if (empty($this->_status)) {
+        if ($this->_status === false) {
             return "<br> Opcache disabled";
         }
         
@@ -160,6 +160,10 @@ class OpCacheDataModel
 
     public function getScriptStatusCount()
     {
+         if ($this->_status === false) {
+            return "N/A";
+        }
+        
         return count($this->_status["scripts"]);
     }
 
