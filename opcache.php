@@ -27,6 +27,11 @@ class OpCacheDataModel
     public function getStatusDataRows()
     {
         $rows = array();
+
+        if (empty($this->_status)) {
+            return "<br> Opcache disabled";
+        }
+
         foreach ($this->_status as $key => $value) {
             if ($key === 'scripts') {
                 continue;
