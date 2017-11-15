@@ -103,6 +103,11 @@ class OpCacheDataModel
 
     public function getScriptStatusRows()
     {
+        
+        if (empty($this->_status)) {
+            return "<br> Opcache disabled";
+        }
+        
         foreach ($this->_status['scripts'] as $key => $data) {
             $dirs[dirname($key)][basename($key)] = $data;
             $this->_arrayPset($this->_d3Scripts, $key, array(
