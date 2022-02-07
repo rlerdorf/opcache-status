@@ -290,6 +290,7 @@ $dataModel = new OpCacheDataModel();
 <meta charset="utf-8">
 <html>
 <head>
+    <meta http-equiv="refresh" content="5">
     <style>
         body {
             font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
