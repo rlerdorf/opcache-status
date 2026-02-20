@@ -13,6 +13,25 @@ files.
 
 [![Screenshot](https://raw.githubusercontent.com/jamesrwhite/opcache-status/improve-readme/screenshot.png)](https://raw.githubusercontent.com/jamesrwhite/opcache-status/improve-readme/screenshot.png)
 
+### Usage
+
+Install the package
+```
+composer require --dev rlerdorf/opcache-status dev-master
+```
+
+Drop it where you want it in your public folder. Example: 
+```
+ln -s vendor/rlerdorf/opcache-status/opcache.php ./public/
+```
+
+Open the file in your browser. Example:
+```
+http://127.0.0.1:8000/opcache.php
+```
+
+This report will get populated when you hit your PHP scripts.
+
 ### TODO
 
  - The ability to sort the list of cached scripts by the various columns
