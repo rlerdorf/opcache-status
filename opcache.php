@@ -19,6 +19,11 @@ class OpCacheDataModel
         $this->_status = opcache_get_status();
     }
 
+    public function getStatus()
+    {
+        return $this->_status !== false;
+    }
+
     public function getPageTitle()
     {
         return 'PHP ' . phpversion() . " with OpCache {$this->_configuration['version']['version']}";
@@ -507,9 +512,13 @@ if (isset($_GET['clear']) && $_GET['clear'] == 1) {
                 <input type="radio" id="tab-status" name="tab-group-1" checked>
                 <label for="tab-status">Status</label>
                 <div class="content">
+                    <?php if($dataModel->getStatus()): ?>
                     <table>
                         <?php echo $dataModel->getStatusDataRows(); ?>
                     </table>
+                    <?php else:?>
+                        Opcache is disable
+                    <?php endif;?>
                 </div>
             </div>
 
@@ -527,14 +536,18 @@ if (isset($_GET['clear']) && $_GET['clear'] == 1) {
                 <input type="radio" id="tab-scripts" name="tab-group-1">
                 <label for="tab-scripts">Scripts (<?php echo $dataModel->getScriptStatusCount(); ?>)</label>
                 <div class="content">
-                    <table style="font-size:0.8em;">
-                        <tr>
-                            <th width="10%">Hits</th>
-                            <th width="20%">Memory</th>
-                            <th width="70%">Path</th>
-                        </tr>
-                        <?php echo $dataModel->getScriptStatusRows(); ?>
-                    </table>
+                    <?php if($dataModel->getStatus()): ?>
+                        <table style="font-size:0.8em;">
+                            <tr>
+                                <th width="10%">Hits</th>
+                                <th width="20%">Memory</th>
+                                <th width="70%">Path</th>
+                            </tr>
+                            <?php echo $dataModel->getScriptStatusRows(); ?>
+                        </table>
+                    <?php else:?>
+                        Opcache is disable
+                    <?php endif;?>
                 </div>
             </div>
 
