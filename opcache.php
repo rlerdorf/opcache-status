@@ -1,17 +1,20 @@
 <?php declare(strict_types=1);
 
+// Set to true to disable cache reset and script invalidation
+$readonly = false;
+
 if (!extension_loaded('Zend OPcache')) {
     require __DIR__ . '/data-sample.php';
 }
 
-if (isset($_GET['clear']) && $_GET['clear'] === '1' && function_exists('opcache_reset')) {
+if (!$readonly && isset($_GET['clear']) && $_GET['clear'] === '1' && function_exists('opcache_reset')) {
     opcache_reset();
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
 
-if (isset($_GET['invalidate']) && function_exists('opcache_invalidate')) {
-    opcache_invalidate(urldecode($_GET['invalidate']), true);
+if (!$readonly && isset($_GET['invalidate']) && function_exists('opcache_invalidate')) {
+    opcache_invalidate($_GET['invalidate'], true);
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
@@ -335,7 +338,7 @@ class OpCacheDataModel
     {
         $blacklist = $this->configuration['blacklist'] ?? [];
         if (empty($blacklist)) {
-            return "<tr><td colspan=\"2\" style=\"font-style:italic;color:var(--text-muted)\">No blacklisted paths</td></tr>\n";
+            return "<tr><td style=\"font-style:italic;color:var(--text-muted)\">No blacklisted paths</td></tr>\n";
         }
         $rows = [];
         foreach ($blacklist as $path) {
@@ -1360,7 +1363,9 @@ $noOpcache = !extension_loaded('Zend OPcache');
         <?php endif; ?>
 
         <div class="actions">
+            <?php if (!$readonly): ?>
             <a href="?clear=1" id="reset-cache-link">Reset cache</a>
+            <?php endif; ?>
             <button class="auto-refresh-btn" id="auto-refresh-btn">Auto-refresh</button>
         </div>
 
@@ -1510,6 +1515,7 @@ $noOpcache = !extension_loaded('Zend OPcache');
             sessionStorage.setItem('opcache-scroll', JSON.stringify(scrollState));
         });
 
+        var readOnly = <?= $readonly ? 'true' : 'false' ?>;
         var dataset = <?= $dataModel->getGraphDataSetJson() ?>;
 
         // --- Stats text descriptions per dataset ---
@@ -1883,7 +1889,17 @@ $noOpcache = !extension_loaded('Zend OPcache');
         var scriptList = <?= $dataModel->getScriptListJson() ?>;
         var scriptsTable = document.getElementById('scripts-table');
         var savedSort = sessionStorage.getItem('opcache-sort');
-        var currentSort = savedSort ? JSON.parse(savedSort) : { key: 'path', dir: 1 };
+        var currentSort = { key: 'path', dir: 1 };
+        if (savedSort) {
+            try {
+                var parsedSort = JSON.parse(savedSort);
+                if (parsedSort && typeof parsedSort.key === 'string' && typeof parsedSort.dir === 'number') {
+                    currentSort = parsedSort;
+                }
+            } catch (e) {
+                sessionStorage.removeItem('opcache-sort');
+            }
+        }
 
         function renderScriptTable() {
             if (!scriptsTable) return;
@@ -1905,23 +1921,25 @@ $noOpcache = !extension_loaded('Zend OPcache');
                 td3.className = 'path-cell';
                 td3.textContent = s.path;
                 td3.title = s.path;
-                var btn = document.createElement('button');
-                btn.className = 'invalidate-btn';
-                btn.innerHTML = '&times;';
-                btn.title = 'Invalidate this script';
-                (function(path) {
-                    btn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        showConfirm(
-                            'Invalidate Script',
-                            '<p>Remove this file from the OPcache. It will be recompiled on next access.</p>' +
-                            '<div class="confirm-path">' + path.replace(/</g, '&lt;') + '</div>',
-                            'Invalidate',
-                            function() { location.href = '?invalidate=' + encodeURIComponent(path); }
-                        );
-                    });
-                })(s.path);
-                td3.appendChild(btn);
+                if (!readOnly) {
+                    var btn = document.createElement('button');
+                    btn.className = 'invalidate-btn';
+                    btn.innerHTML = '&times;';
+                    btn.title = 'Invalidate this script';
+                    (function(path) {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            showConfirm(
+                                'Invalidate Script',
+                                '<p>Remove this file from the OPcache. It will be recompiled on next access.</p>' +
+                                '<div class="confirm-path">' + path.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>',
+                                'Invalidate',
+                                function() { location.href = '?invalidate=' + encodeURIComponent(path); }
+                            );
+                        });
+                    })(s.path);
+                    td3.appendChild(btn);
+                }
                 tr.appendChild(td1);
                 tr.appendChild(td2);
                 tr.appendChild(td3);
