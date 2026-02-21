@@ -301,7 +301,7 @@ class OpCacheDataModel
 
     public function getConfigDocsJson(): string
     {
-        return json_encode(self::getConfigDocs());
+        return json_encode(self::getConfigDocs(), JSON_HEX_TAG);
     }
 
     public function getScriptListJson(): string
@@ -317,7 +317,7 @@ class OpCacheDataModel
                 'memory' => $data['memory_consumption'],
             ];
         }
-        return json_encode($list);
+        return json_encode($list, JSON_HEX_TAG);
     }
 
     public function getScriptStatusCount(): int
@@ -473,13 +473,13 @@ class OpCacheDataModel
 
     public function getHealthChecksJson(): string
     {
-        return json_encode($this->getHealthChecks());
+        return json_encode($this->getHealthChecks(), JSON_HEX_TAG);
     }
 
     public function getGraphDataSetJson(): string
     {
         if (!is_array($this->status)) {
-            return json_encode(['memory' => [0, 0, 0], 'keys' => [0, 0, 0], 'hits' => [0, 0, 0], 'restarts' => [0, 0, 0]]);
+            return json_encode(['memory' => [0, 0, 0], 'keys' => [0, 0, 0], 'hits' => [0, 0, 0], 'restarts' => [0, 0, 0]], JSON_HEX_TAG);
         }
 
         $dataset = [];
@@ -523,7 +523,7 @@ class OpCacheDataModel
             ];
         }
 
-        return json_encode($dataset);
+        return json_encode($dataset, JSON_HEX_TAG);
     }
 
     public function getHumanUsedMemory(): string
@@ -548,7 +548,7 @@ class OpCacheDataModel
 
     public function getScriptsJson(): string
     {
-        return json_encode($this->scripts ?: ['name' => '/', 'children' => []]);
+        return json_encode($this->scripts ?: ['name' => '/', 'children' => []], JSON_HEX_TAG);
     }
 
     public function hasJit(): bool
@@ -1499,7 +1499,7 @@ $noOpcache = !extension_loaded('Zend OPcache');
         // =============================================
         //  SQUARIFIED TREEMAP
         // =============================================
-        var scriptData = JSON.parse('<?= $dataModel->getScriptsJson() ?>');
+        var scriptData = <?= $dataModel->getScriptsJson() ?>;
 
         // Two render targets: inline and fullscreen overlay
         var overlay = document.getElementById('partition-overlay');
