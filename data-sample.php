@@ -24,7 +24,7 @@ function opcache_get_status(): array
             'num_cached_keys' => 78,
             'max_cached_keys' => 223,
             'hits' => 66817,
-            'start_time' => 1363461391,
+            'start_time' => time() - 86400 * 12 - 3600 * 7,
             'last_restart_time' => 0,
             'misses' => 126,
             'blacklist_misses' => 0,

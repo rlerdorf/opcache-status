@@ -34,6 +34,22 @@ class OpCacheDataModel
         return 'PHP ' . phpversion() . " with OPcache {$this->configuration['version']['version']}";
     }
 
+    public function getUptime(): string
+    {
+        if (!is_array($this->status) || empty($this->status['opcache_statistics']['start_time'])) {
+            return '';
+        }
+        $start = $this->status['opcache_statistics']['start_time'];
+        $lastRestart = $this->status['opcache_statistics']['last_restart_time'] ?? 0;
+        $since = $lastRestart > 0 ? $lastRestart : $start;
+        $diff = (new \DateTimeImmutable("@$since"))->diff(new \DateTimeImmutable());
+        if ($diff->y > 0) return $diff->format('%yy %mmo');
+        if ($diff->m > 0) return $diff->format('%mmo %dd');
+        if ($diff->d > 0) return $diff->format('%dd %hh');
+        if ($diff->h > 0) return $diff->format('%hh %im');
+        return $diff->format('%im %ss');
+    }
+
     public function getStatusDataRows(): string
     {
         $rows = [];
@@ -692,6 +708,14 @@ $noOpcache = !extension_loaded('Zend OPcache');
             padding: 16px 0 8px;
             font-size: 1.4em;
             font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        h1 .uptime {
+            font-weight: 500;
+            font-size: 0.85em;
+            color: var(--text);
         }
         .notice {
             background-color: #fff3cd;
@@ -1037,7 +1061,7 @@ $noOpcache = !extension_loaded('Zend OPcache');
 </head>
 <body>
     <div id="container">
-        <h1><?= $dataModel->getPageTitle() ?></h1>
+        <h1><?= $dataModel->getPageTitle() ?><?php $uptime = $dataModel->getUptime(); if ($uptime): ?><span class="uptime">Uptime: <?= $uptime ?></span><?php endif; ?></h1>
 
         <?php if ($noOpcache): ?>
         <div class="notice">Zend OPcache extension not loaded &mdash; showing sample data.</div>
