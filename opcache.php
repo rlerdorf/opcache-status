@@ -10,6 +10,12 @@ if (isset($_GET['clear']) && $_GET['clear'] === '1' && function_exists('opcache_
     exit;
 }
 
+if (isset($_GET['invalidate']) && function_exists('opcache_invalidate')) {
+    opcache_invalidate(urldecode($_GET['invalidate']), true);
+    header('Location: ' . $_SERVER['PHP_SELF']);
+    exit;
+}
+
 class OpCacheDataModel
 {
     private const THOUSAND_SEPARATOR = true;
@@ -92,6 +98,16 @@ class OpCacheDataModel
                 $value = 'true';
             }
             $rows[] = "<tr><th>$key</th><td>$value</td></tr>\n";
+        }
+
+        $preload = $this->configuration['directives']['opcache.preload'] ?? '';
+        if ($preload !== '') {
+            $preloadUser = $this->configuration['directives']['opcache.preload_user'] ?? '';
+            $rows[] = "<tr><th colspan=\"2\" style=\"color:var(--accent);padding-top:12px\">Preloading</th></tr>\n";
+            $rows[] = '<tr><th>preload</th><td>' . htmlspecialchars($preload) . "</td></tr>\n";
+            if ($preloadUser !== '') {
+                $rows[] = '<tr><th>preload_user</th><td>' . htmlspecialchars($preloadUser) . "</td></tr>\n";
+            }
         }
 
         return implode("\n", $rows);
@@ -203,7 +219,27 @@ class OpCacheDataModel
             'opcache.save_comments' => 'If disabled, all documentation comments will be discarded from the opcode cache to reduce the size of the optimised code. Disabling may break applications and frameworks that rely on comment parsing for annotations, including Doctrine, Zend Framework 2, and PHPUnit.',
             'opcache.fast_shutdown' => 'If enabled, a fast shutdown sequence is used that doesn\'t free each allocated block, but relies on the Zend Engine memory manager to deallocate the entire set of request variables en masse. Removed in PHP 7.2.0; integrated into PHP itself.',
             'opcache.enable_file_override' => 'When enabled, the opcode cache will be checked for whether a file has already been cached when file_exists(), is_file() and is_readable() are called. This may increase performance in applications that check the readability of PHP scripts, but risks returning stale data if opcache.validate_timestamps is disabled.',
-            'opcache.optimization_level' => 'A bitmask that controls which optimisation passes are executed.',
+            'opcache.optimization_level' => '<p>A bitmask integer that controls which optimisation passes the OPcache optimizer executes when compiling PHP scripts. The default value <code>0x7FFEBFFF</code> enables all safe passes. Each bit enables one pass:</p>'
+                . '<table class="opt-doc-table">'
+                . '<tr><th>Bit</th><th>Pass</th><th>Description</th></tr>'
+                . '<tr><td><code>0x0001</code></td><td>Pre-evaluate constant operations</td><td>Evaluates constant expressions at compile time (e.g. <code>1+2</code> becomes <code>3</code>, string concatenations of literals are merged).</td></tr>'
+                . '<tr><td><code>0x0004</code></td><td>Jump optimization</td><td>Converts sequences of jumps into direct jumps to the final target, eliminating unnecessary branches and unreachable code after unconditional jumps.</td></tr>'
+                . '<tr><td><code>0x0008</code></td><td>Optimize function calls</td><td>Replaces calls to certain internal functions with faster opcode equivalents (e.g. <code>strlen()</code>, <code>defined()</code>, <code>call_user_func()</code>).</td></tr>'
+                . '<tr><td><code>0x0010</code></td><td>CFG-based optimization</td><td>Builds a control flow graph and performs block-level optimisations: merging adjacent blocks, removing empty blocks, and simplifying conditional branches.</td></tr>'
+                . '<tr><td><code>0x0020</code></td><td>Data flow analysis</td><td>SSA-based optimisations using Static Single Assignment form: type inference, range propagation, and value numbering to eliminate redundant computations.</td></tr>'
+                . '<tr><td><code>0x0040</code></td><td>Call graph analysis</td><td>Analyses call relationships between functions to enable inter-procedural optimisations such as determining which functions can be inlined.</td></tr>'
+                . '<tr><td><code>0x0080</code></td><td>SCCP (constant propagation)</td><td>Sparse Conditional Constant Propagation — propagates known constant values through the program and eliminates branches that can never be taken.</td></tr>'
+                . '<tr><td><code>0x0100</code></td><td>Optimize temp variables</td><td>Reduces the number of temporary variables used by reusing slots, decreasing the memory footprint of each compiled function.</td></tr>'
+                . '<tr><td><code>0x0200</code></td><td>NOP removal</td><td>Removes NOP (no-operation) instructions left behind by earlier optimisation passes, compacting the opcode array.</td></tr>'
+                . '<tr><td><code>0x0400</code></td><td>Compact literals</td><td>De-duplicates identical literal values (strings, integers, floats) within a function, reducing memory usage in the literal table.</td></tr>'
+                . '<tr><td><code>0x0800</code></td><td>Adjust used stack</td><td>Recalculates the actual stack size needed by each function after optimisation, freeing over-allocated stack slots.</td></tr>'
+                . '<tr><td><code>0x1000</code></td><td>Compact unused variables</td><td>Removes variables that are assigned but never read, and compacts the remaining variable table to close gaps.</td></tr>'
+                . '<tr><td><code>0x2000</code></td><td>Dead code elimination</td><td>Removes instructions whose results are never used, including assignments to variables that are overwritten before being read.</td></tr>'
+                . '<tr class="unsafe"><td><code>0x4000</code></td><td>Constant substitution &#9888;</td><td>Replaces references to constants defined via <code>define()</code> with their values. Marked <em>unsafe</em> because it assumes constants are never redefined; can break code using conditionally defined constants.</td></tr>'
+                . '<tr><td><code>0x8000</code></td><td>Trivial function inlining</td><td>Inlines very simple functions that just return a constant or a parameter, eliminating function call overhead entirely.</td></tr>'
+                . '<tr class="unsafe"><td><code>0x10000</code></td><td>Ignore operator overloading &#9888;</td><td>Allows the optimizer to treat arithmetic operators as pure operations. Marked <em>unsafe</em> because classes like GMP and BCMath overload operators, and this pass may incorrectly optimize those expressions.</td></tr>'
+                . '</table>'
+                . '<p style="margin-top:10px;font-size:0.9em;color:var(--text-muted)">&#9888; = disabled by default because it may change runtime behaviour in edge cases.</p>',
             'opcache.inherited_hack' => 'This configuration directive is ignored.',
             'opcache.dups_fix' => 'This hack should only be enabled to work around "Cannot redeclare class" errors.',
             'opcache.blacklist_filename' => 'The location of the OPcache blacklist file. A blacklist file is a text file that contains the names of files that should not be accelerated, one per line. Wildcards are allowed, and prefixes can also be provided. Lines starting with a semicolon are ignored as comments.',
@@ -281,6 +317,7 @@ class OpCacheDataModel
                 'opcache.force_restart_timeout' => $value . 's',
                 'opcache.revalidate_freq'       => $value . 's',
                 'opcache.file_update_protection' => $value . 's',
+                'opcache.optimization_level'    => $this->formatOptimizationLevel((int)$value),
                 'opcache.jit'                   => $value === '' ? 'off' : $value,
                 default                         => $value,
             };
@@ -291,6 +328,19 @@ class OpCacheDataModel
             $rows[] = "<tr$class><th>$key$helpBtn</th><td>$value</td></tr>\n";
         }
 
+        return implode("\n", $rows);
+    }
+
+    public function getBlacklistRows(): string
+    {
+        $blacklist = $this->configuration['blacklist'] ?? [];
+        if (empty($blacklist)) {
+            return "<tr><td colspan=\"2\" style=\"font-style:italic;color:var(--text-muted)\">No blacklisted paths</td></tr>\n";
+        }
+        $rows = [];
+        foreach ($blacklist as $path) {
+            $rows[] = '<tr><td>' . htmlspecialchars($path) . '</td></tr>';
+        }
         return implode("\n", $rows);
     }
 
@@ -488,6 +538,24 @@ class OpCacheDataModel
                 : '',
         ];
 
+        // 7. File Cache
+        $fileCache = $config['opcache.file_cache'] ?? '';
+        if ($fileCache !== '') {
+            $fileCacheOnly = !empty($config['opcache.file_cache_only']);
+            $detail = htmlspecialchars($fileCache);
+            if ($fileCacheOnly) {
+                $detail .= ' (file_cache_only)';
+            }
+            $checks[] = [
+                'name' => 'File Cache',
+                'directive' => 'opcache.file_cache',
+                'utilization' => 0,
+                'status' => 'info',
+                'detail' => $detail,
+                'suggestion' => '',
+            ];
+        }
+
         return $checks;
     }
 
@@ -620,6 +688,37 @@ class OpCacheDataModel
     private function formatValue(int $value): string
     {
         return self::THOUSAND_SEPARATOR ? number_format($value) : (string)$value;
+    }
+
+    private const OPTIMIZATION_PASSES = [
+        0x0001 => 'Pre-evaluate constant operations',
+        0x0004 => 'Jump optimization',
+        0x0008 => 'Optimize function calls',
+        0x0010 => 'CFG-based optimization',
+        0x0020 => 'Data flow analysis',
+        0x0040 => 'Call graph analysis',
+        0x0080 => 'SCCP (constant propagation)',
+        0x0100 => 'Optimize temp variables',
+        0x0200 => 'NOP removal',
+        0x0400 => 'Compact literals',
+        0x0800 => 'Adjust used stack',
+        0x1000 => 'Compact unused variables',
+        0x2000 => 'Dead code elimination',
+        0x4000 => 'Constant substitution (unsafe)',
+        0x8000 => 'Trivial function inlining',
+        0x10000 => 'Ignore operator overloading (unsafe)',
+    ];
+
+    private function formatOptimizationLevel(int $level): string
+    {
+        $hex = '0x' . strtoupper(dechex($level));
+        $html = $hex . '<div class="opt-passes">';
+        foreach (self::OPTIMIZATION_PASSES as $bit => $name) {
+            $on = ($level & $bit) !== 0;
+            $dot = $on ? '<span class="opt-on">&#x25CF;</span>' : '<span class="opt-off">&#x25CB;</span>';
+            $html .= $dot . ' ' . htmlspecialchars($name) . '<br>';
+        }
+        return $html . '</div>';
     }
 
     private function sizeForHumans(int $bytes): string
@@ -792,6 +891,10 @@ $noOpcache = !extension_loaded('Zend OPcache');
             width: 90%;
             padding: 0;
             box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transition: max-width 0.15s ease;
+        }
+        #help-modal.wide {
+            max-width: 820px;
         }
         #help-modal-title {
             font-family: var(--mono);
@@ -818,7 +921,14 @@ $noOpcache = !extension_loaded('Zend OPcache');
             padding: 16px 18px;
             font-size: 0.92em;
             line-height: 1.6;
+            max-height: 65vh;
+            overflow-y: auto;
         }
+        .opt-doc-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
+        .opt-doc-table th, .opt-doc-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+        .opt-doc-table th { font-weight: 600; white-space: nowrap; }
+        .opt-doc-table tr.unsafe td { color: var(--text-muted); }
+        .opt-doc-table code { font-family: var(--mono); font-size: 0.92em; }
         #help-modal-link {
             display: block;
             padding: 10px 18px 14px;
@@ -827,6 +937,86 @@ $noOpcache = !extension_loaded('Zend OPcache');
             color: var(--text-muted);
         }
         #help-modal-link a { color: var(--accent); }
+
+        /* Confirmation modal */
+        #confirm-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(0,0,0,0.45);
+            display: none;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 18vh;
+        }
+        #confirm-overlay.visible { display: flex; }
+        #confirm-modal {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            max-width: 480px;
+            width: 90%;
+            padding: 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        #confirm-title {
+            font-size: 0.95em;
+            font-weight: 600;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            color: var(--danger);
+        }
+        #confirm-body {
+            padding: 16px 18px;
+            font-size: 0.92em;
+            line-height: 1.6;
+        }
+        #confirm-body .confirm-path {
+            font-family: var(--mono);
+            font-size: 0.9em;
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 6px 10px;
+            margin: 8px 0;
+            word-break: break-all;
+        }
+        #confirm-body .confirm-warn {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+        #confirm-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 12px 18px;
+            border-top: 1px solid var(--border);
+        }
+        #confirm-cancel {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 7px 16px;
+            cursor: pointer;
+            font-size: 0.9em;
+            color: var(--text);
+            font-family: var(--font);
+        }
+        #confirm-cancel:hover { border-color: var(--text-muted); }
+        #confirm-ok {
+            background: var(--danger);
+            color: #fff;
+            border: 1px solid var(--danger);
+            border-radius: var(--radius);
+            padding: 7px 16px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-family: var(--font);
+        }
+        #confirm-ok:hover { opacity: 0.85; }
+
         .content td { text-align: right; }
         .content th { text-align: left; }
         .tab:nth-child(4) td { text-align: left; }
@@ -882,6 +1072,11 @@ $noOpcache = !extension_loaded('Zend OPcache');
             font-style: italic;
         }
 
+        /* Optimization level pass list */
+        .opt-passes { font-size: 0.85em; margin-top: 4px; line-height: 1.6; }
+        .opt-on { color: var(--success); }
+        .opt-off { color: var(--text-muted); }
+
         /* CSS radio-button tab hack */
         .tabs { position: relative; min-height: 490px; }
         .tab { display: inline-block; }
@@ -909,7 +1104,10 @@ $noOpcache = !extension_loaded('Zend OPcache');
             border: 1px solid var(--border);
             border-radius: 0 var(--radius) var(--radius) var(--radius);
             height: 450px;
-            overflow: auto;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
         }
         [type=radio]:checked ~ label {
             background: var(--bg);
@@ -933,6 +1131,96 @@ $noOpcache = !extension_loaded('Zend OPcache');
         .sortable::after { content: ' \2195'; opacity: 0.3; }
         .sortable.asc::after { content: ' \2191'; opacity: 0.8; }
         .sortable.desc::after { content: ' \2193'; opacity: 0.8; }
+
+        #scripts-table { table-layout: fixed; }
+        #scripts-table td.path-cell {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            position: relative;
+            padding-right: 28px;
+        }
+        #scripts-table tbody tr:hover td.path-cell { color: var(--accent); }
+        .invalidate-btn {
+            display: none;
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1em;
+            padding: 1px 6px;
+            line-height: 1;
+        }
+        .invalidate-btn:hover { color: var(--danger); border-color: var(--danger); }
+        #scripts-table tbody tr:hover .invalidate-btn { display: block; }
+
+        .auto-refresh-btn {
+            display: inline-block;
+            margin-left: 16px;
+            padding: 4px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.9em;
+            font-family: var(--font);
+        }
+        .auto-refresh-btn:hover { border-color: var(--accent); }
+        .auto-refresh-btn.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        .auto-refresh-btn.active::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #fff;
+            margin-right: 6px;
+            vertical-align: middle;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Realtime chart */
+        #realtime-chart {
+            margin-top: 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .rt-header {
+            padding: 8px 12px 4px;
+            font-size: 0.82em;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: var(--bg-alt);
+            display: flex;
+            justify-content: space-between;
+        }
+        #realtime-chart svg { display: block; }
+        .rt-legend {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            font-size: 0.78em;
+            color: var(--text-muted);
+            padding: 6px 0 8px;
+            background: var(--bg-alt);
+            font-family: var(--mono);
+        }
+        .rt-legend span span { margin-right: 3px; }
 
         /* Graph panel */
         #graph {
@@ -1072,7 +1360,8 @@ $noOpcache = !extension_loaded('Zend OPcache');
         <?php endif; ?>
 
         <div class="actions">
-            <a href="?clear=1" onclick="return confirm('Reset the entire OPcache?')">Reset cache</a>
+            <a href="?clear=1" id="reset-cache-link">Reset cache</a>
+            <button class="auto-refresh-btn" id="auto-refresh-btn">Auto-refresh</button>
         </div>
 
         <div class="main-layout">
@@ -1094,6 +1383,8 @@ $noOpcache = !extension_loaded('Zend OPcache');
                     <label for="tab-config">Configuration</label>
                     <div class="content">
                         <table><?= $dataModel->getConfigDataRows() ?></table>
+                        <h3 style="padding:12px 12px 4px;font-size:0.95em;color:var(--text-muted)">Blacklisted Paths</h3>
+                        <table><?= $dataModel->getBlacklistRows() ?></table>
                     </div>
                 </div>
 
@@ -1143,6 +1434,8 @@ $noOpcache = !extension_loaded('Zend OPcache');
             </div>
         </div>
 
+        <div id="realtime-chart" style="display:none"></div>
+
         <div id="treemap-inline">
             <div class="partition-header">
                 <div class="partition-breadcrumb" id="inline-breadcrumb"></div>
@@ -1160,6 +1453,17 @@ $noOpcache = !extension_loaded('Zend OPcache');
         </div>
     </div>
 
+    <div id="confirm-overlay">
+        <div id="confirm-modal">
+            <div id="confirm-title"></div>
+            <div id="confirm-body"></div>
+            <div id="confirm-actions">
+                <button id="confirm-cancel">Cancel</button>
+                <button id="confirm-ok">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <div id="partition-overlay">
         <div class="partition-header">
             <div class="partition-breadcrumb" id="breadcrumb"></div>
@@ -1171,6 +1475,40 @@ $noOpcache = !extension_loaded('Zend OPcache');
     <script>
     (function() {
         "use strict";
+
+        // Restore active tab across reloads
+        var savedTab = sessionStorage.getItem('opcache-tab');
+        if (savedTab) {
+            var tabEl = document.getElementById(savedTab);
+            if (tabEl) tabEl.checked = true;
+        }
+        var tabRadios = document.querySelectorAll('input[name="tab-group-1"]');
+        for (var ti = 0; ti < tabRadios.length; ti++) {
+            tabRadios[ti].addEventListener('change', function() {
+                sessionStorage.setItem('opcache-tab', this.id);
+            });
+        }
+
+        // Restore scroll positions per tab
+        var contentDivs = document.querySelectorAll('.content');
+        var savedScroll = {};
+        try { var _ss = sessionStorage.getItem('opcache-scroll'); if (_ss) savedScroll = JSON.parse(_ss); } catch(e) {}
+        for (var ci = 0; ci < contentDivs.length; ci++) {
+            var tabId = contentDivs[ci].parentNode.querySelector('input[type=radio]');
+            if (tabId && savedScroll[tabId.id]) {
+                contentDivs[ci].scrollTop = savedScroll[tabId.id];
+            }
+        }
+        window.addEventListener('beforeunload', function() {
+            var scrollState = {};
+            for (var ci = 0; ci < contentDivs.length; ci++) {
+                var tabId = contentDivs[ci].parentNode.querySelector('input[type=radio]');
+                if (tabId && contentDivs[ci].scrollTop > 0) {
+                    scrollState[tabId.id] = contentDivs[ci].scrollTop;
+                }
+            }
+            sessionStorage.setItem('opcache-scroll', JSON.stringify(scrollState));
+        });
 
         var dataset = <?= $dataModel->getGraphDataSetJson() ?>;
 
@@ -1308,24 +1646,31 @@ $noOpcache = !extension_loaded('Zend OPcache');
             statsEl.innerHTML = html;
         }
 
-        // Initial draw
-        drawDonut(dataset.memory, donutColors);
-        updateStats('memory');
+        // Initial draw — restore saved dataset or default to memory
+        var savedDataset = sessionStorage.getItem('opcache-dataset') || 'memory';
+        if (!dataset[savedDataset]) savedDataset = 'memory';
+
+        function showDataset(key) {
+            if (!dataset[key]) return;
+            var nonZero = dataset[key].filter(function(v) { return v > 0; });
+            if (nonZero.length > 0) {
+                var info = statsInfo[key];
+                drawDonut(dataset[key], info ? info.colors : donutColors);
+            } else {
+                svg.style.display = 'none';
+            }
+            updateStats(key);
+        }
+
+        showDataset(savedDataset);
 
         // Dataset switching
         var radios = document.querySelectorAll('input[name="dataset"]');
         for (var r = 0; r < radios.length; r++) {
+            if (radios[r].value === savedDataset) radios[r].checked = true;
             radios[r].addEventListener('change', function() {
-                var key = this.value;
-                if (!dataset[key]) return;
-                var nonZero = dataset[key].filter(function(v) { return v > 0; });
-                if (nonZero.length > 0) {
-                    var info = statsInfo[key];
-                    drawDonut(dataset[key], info ? info.colors : donutColors);
-                } else {
-                    svg.style.display = 'none';
-                }
-                updateStats(key);
+                sessionStorage.setItem('opcache-dataset', this.value);
+                showDataset(this.value);
             });
         }
 
@@ -1422,15 +1767,23 @@ $noOpcache = !extension_loaded('Zend OPcache');
             if (!icon) return;
             var key = icon.getAttribute('data-doc');
             if (!key || !configDocs[key]) return;
+            var modal = document.getElementById('help-modal');
             helpTitle.textContent = key;
-            helpBody.textContent = configDocs[key];
+            var isHtml = configDocs[key].charAt(0) === '<';
+            if (isHtml) {
+                helpBody.innerHTML = configDocs[key];
+                modal.classList.add('wide');
+            } else {
+                helpBody.textContent = configDocs[key];
+                modal.classList.remove('wide');
+            }
             var anchor = phpNetAnchors[key] || 'ini.' + key;
             helpLink.innerHTML = '<a href="https://php.net/manual/en/opcache.configuration.php#' +
                 anchor + '" target="_blank" rel="noopener">php.net documentation &rarr;</a>';
             helpOverlay.classList.add('visible');
         });
 
-        function closeHelp() { helpOverlay.classList.remove('visible'); }
+        function closeHelp() { helpOverlay.classList.remove('visible'); document.getElementById('help-modal').classList.remove('wide'); }
         helpClose.addEventListener('click', closeHelp);
         helpOverlay.addEventListener('click', function(e) {
             if (e.target === helpOverlay) closeHelp();
@@ -1471,11 +1824,66 @@ $noOpcache = !extension_loaded('Zend OPcache');
         }
 
         // =============================================
+        //  CONFIRMATION MODAL
+        // =============================================
+        var confirmOverlay = document.getElementById('confirm-overlay');
+        var confirmTitle = document.getElementById('confirm-title');
+        var confirmBody = document.getElementById('confirm-body');
+        var confirmOk = document.getElementById('confirm-ok');
+        var confirmCancel = document.getElementById('confirm-cancel');
+        var confirmCallback = null;
+
+        function showConfirm(title, bodyHtml, okLabel, onConfirm) {
+            confirmTitle.textContent = title;
+            confirmBody.innerHTML = bodyHtml;
+            confirmOk.textContent = okLabel || 'Confirm';
+            confirmCallback = onConfirm;
+            confirmOverlay.classList.add('visible');
+            confirmCancel.focus();
+        }
+
+        function closeConfirm() {
+            confirmOverlay.classList.remove('visible');
+            confirmCallback = null;
+        }
+
+        confirmOk.addEventListener('click', function() {
+            if (confirmCallback) confirmCallback();
+            closeConfirm();
+        });
+        confirmCancel.addEventListener('click', closeConfirm);
+        confirmOverlay.addEventListener('click', function(e) {
+            if (e.target === confirmOverlay) closeConfirm();
+        });
+        document.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape' && confirmOverlay.classList.contains('visible')) closeConfirm();
+        });
+
+        // Reset cache link
+        var resetLink = document.getElementById('reset-cache-link');
+        if (resetLink) {
+            resetLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                var href = this.href;
+                showConfirm(
+                    'Reset Entire OPcache',
+                    '<p>This will invalidate <strong>every cached script</strong>, forcing PHP to recompile all files on next access. ' +
+                    'This typically causes a temporary spike in CPU usage and response latency across the site.</p>' +
+                    '<p class="confirm-warn">For a less disruptive approach, switch to the <strong>Scripts</strong> tab and ' +
+                    'invalidate individual files by hovering over a row and clicking the <strong>\u00d7</strong> button on the right.</p>',
+                    'Reset cache',
+                    function() { sessionStorage.removeItem('opcache-history'); location.href = href; }
+                );
+            });
+        }
+
+        // =============================================
         //  SORTABLE SCRIPTS TABLE
         // =============================================
         var scriptList = <?= $dataModel->getScriptListJson() ?>;
         var scriptsTable = document.getElementById('scripts-table');
-        var currentSort = { key: 'path', dir: 1 }; // 1=asc, -1=desc
+        var savedSort = sessionStorage.getItem('opcache-sort');
+        var currentSort = savedSort ? JSON.parse(savedSort) : { key: 'path', dir: 1 };
 
         function renderScriptTable() {
             if (!scriptsTable) return;
@@ -1494,7 +1902,26 @@ $noOpcache = !extension_loaded('Zend OPcache');
                 var td2 = document.createElement('td');
                 td2.innerHTML = sizeForHumans(s.memory);
                 var td3 = document.createElement('td');
+                td3.className = 'path-cell';
                 td3.textContent = s.path;
+                td3.title = s.path;
+                var btn = document.createElement('button');
+                btn.className = 'invalidate-btn';
+                btn.innerHTML = '&times;';
+                btn.title = 'Invalidate this script';
+                (function(path) {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        showConfirm(
+                            'Invalidate Script',
+                            '<p>Remove this file from the OPcache. It will be recompiled on next access.</p>' +
+                            '<div class="confirm-path">' + path.replace(/</g, '&lt;') + '</div>',
+                            'Invalidate',
+                            function() { location.href = '?invalidate=' + encodeURIComponent(path); }
+                        );
+                    });
+                })(s.path);
+                td3.appendChild(btn);
                 tr.appendChild(td1);
                 tr.appendChild(td2);
                 tr.appendChild(td3);
@@ -1505,6 +1932,10 @@ $noOpcache = !extension_loaded('Zend OPcache');
         if (scriptsTable) {
             var headers = scriptsTable.querySelectorAll('.sortable');
             for (var si = 0; si < headers.length; si++) {
+                // Restore saved sort indicator
+                if (headers[si].getAttribute('data-sort') === currentSort.key) {
+                    headers[si].classList.add(currentSort.dir === 1 ? 'asc' : 'desc');
+                }
                 headers[si].addEventListener('click', function() {
                     var key = this.getAttribute('data-sort');
                     if (currentSort.key === key) {
@@ -1513,11 +1944,11 @@ $noOpcache = !extension_loaded('Zend OPcache');
                         currentSort.key = key;
                         currentSort.dir = key === 'path' ? 1 : -1;
                     }
-                    // Update header classes
                     for (var j = 0; j < headers.length; j++) {
                         headers[j].classList.remove('asc', 'desc');
                     }
                     this.classList.add(currentSort.dir === 1 ? 'asc' : 'desc');
+                    sessionStorage.setItem('opcache-sort', JSON.stringify(currentSort));
                     renderScriptTable();
                 });
             }
@@ -1962,6 +2393,229 @@ $noOpcache = !extension_loaded('Zend OPcache');
                     updateBreadcrumb();
                 }, 300);
             });
+        }
+        // =============================================
+        //  AUTO-REFRESH TOGGLE
+        // =============================================
+        var autoRefreshBtn = document.getElementById('auto-refresh-btn');
+        var autoRefreshInterval = null;
+        var AUTO_REFRESH_MS = 5000;
+
+        function startAutoRefresh() {
+            sessionStorage.setItem('opcache-auto-refresh', '1');
+            autoRefreshBtn.classList.add('active');
+            autoRefreshBtn.textContent = 'Refreshing (5s)';
+            autoRefreshInterval = setInterval(function() { location.reload(); }, AUTO_REFRESH_MS);
+        }
+
+        function stopAutoRefresh() {
+            sessionStorage.removeItem('opcache-auto-refresh');
+            sessionStorage.removeItem('opcache-history');
+            autoRefreshBtn.classList.remove('active');
+            autoRefreshBtn.textContent = 'Auto-refresh';
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+            var rtc = document.getElementById('realtime-chart');
+            if (rtc) { rtc.style.display = 'none'; rtc.innerHTML = ''; }
+        }
+
+        if (autoRefreshBtn) {
+            autoRefreshBtn.addEventListener('click', function() {
+                if (autoRefreshInterval) {
+                    stopAutoRefresh();
+                } else {
+                    startAutoRefresh();
+                }
+            });
+            if (sessionStorage.getItem('opcache-auto-refresh') === '1') {
+                startAutoRefresh();
+            }
+        }
+        // =============================================
+        //  REALTIME MONITORING CHART
+        // =============================================
+        var rtContainer = document.getElementById('realtime-chart');
+        var RT_KEY = 'opcache-history';
+        var RT_MAX = 120;
+        var RT_STALE = 300000; // 5 min
+
+        var rtPoint = {
+            t: Date.now(),
+            h: dataset.hits[1],
+            m: dataset.hits[0],
+            mem: dataset.memory[0]
+        };
+
+        var rtHistory = [];
+        try { var _s = sessionStorage.getItem(RT_KEY); if (_s) rtHistory = JSON.parse(_s); } catch(e) {}
+
+        if (rtHistory.length > 0 && rtPoint.t - rtHistory[rtHistory.length - 1].t > RT_STALE) {
+            rtHistory = [];
+        }
+
+        rtHistory.push(rtPoint);
+        if (rtHistory.length > RT_MAX) rtHistory = rtHistory.slice(-RT_MAX);
+        try { sessionStorage.setItem(RT_KEY, JSON.stringify(rtHistory)); } catch(e) {}
+
+        if (rtContainer && rtHistory.length >= 2) {
+            rtContainer.style.display = 'block';
+
+            var rates = [];
+            for (var ri = 1; ri < rtHistory.length; ri++) {
+                var dt = (rtHistory[ri].t - rtHistory[ri - 1].t) / 1000;
+                if (dt <= 0) continue;
+                rates.push({
+                    t: rtHistory[ri].t,
+                    hps: Math.max(0, (rtHistory[ri].h - rtHistory[ri - 1].h) / dt),
+                    mps: Math.max(0, (rtHistory[ri].m - rtHistory[ri - 1].m) / dt),
+                    mem: rtHistory[ri].mem
+                });
+            }
+
+            if (rates.length >= 1) {
+                var W = rtContainer.clientWidth || 380;
+                var H = 150;
+                var P = {l: 44, r: 44, t: 8, b: 20};
+                var cw = W - P.l - P.r, ch = H - P.t - P.b;
+
+                var tMin = rates[0].t, tMax = rates[rates.length - 1].t;
+                if (tMax === tMin) tMax = tMin + 1;
+
+                var maxRate = 0, minMem = Infinity, maxMem = 0;
+                for (var ri = 0; ri < rates.length; ri++) {
+                    if (rates[ri].hps > maxRate) maxRate = rates[ri].hps;
+                    if (rates[ri].mps > maxRate) maxRate = rates[ri].mps;
+                    if (rates[ri].mem < minMem) minMem = rates[ri].mem;
+                    if (rates[ri].mem > maxMem) maxMem = rates[ri].mem;
+                }
+
+                maxRate = rtNice(maxRate || 1);
+                var memSpan = maxMem - minMem;
+                if (memSpan === 0) memSpan = maxMem * 0.05 || 1;
+                minMem = Math.max(0, minMem - memSpan * 0.2);
+                maxMem = maxMem + memSpan * 0.2;
+
+                function rtNice(v) {
+                    var e = Math.pow(10, Math.floor(Math.log10(v)));
+                    var f = v / e;
+                    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * e;
+                }
+
+                function rtSx(t) { return P.l + ((t - tMin) / (tMax - tMin)) * cw; }
+                function rtSyR(v) { return P.t + ch - (v / maxRate) * ch; }
+                function rtSyM(v) { return P.t + ch - ((v - minMem) / (maxMem - minMem)) * ch; }
+
+                // Header
+                var elapsed = (tMax - tMin) / 1000;
+                var hdr = document.createElement('div');
+                hdr.className = 'rt-header';
+                var hdrL = document.createElement('span');
+                hdrL.textContent = 'Live Activity';
+                var hdrR = document.createElement('span');
+                hdrR.textContent = elapsed >= 120
+                    ? Math.floor(elapsed / 60) + 'm ' + Math.round(elapsed % 60) + 's window'
+                    : Math.round(elapsed) + 's window';
+                hdr.appendChild(hdrL);
+                hdr.appendChild(hdrR);
+                rtContainer.appendChild(hdr);
+
+                // SVG
+                var rtSvg = document.createElementNS(svgNS, 'svg');
+                rtSvg.setAttribute('width', W);
+                rtSvg.setAttribute('height', H);
+
+                // Chart background
+                var rtBg = document.createElementNS(svgNS, 'rect');
+                rtBg.setAttribute('x', P.l); rtBg.setAttribute('y', P.t);
+                rtBg.setAttribute('width', cw); rtBg.setAttribute('height', ch);
+                rtBg.setAttribute('fill', 'var(--bg)'); rtBg.setAttribute('rx', '2');
+                rtSvg.appendChild(rtBg);
+
+                // Grid
+                for (var gi = 0; gi <= 4; gi++) {
+                    var gy = P.t + (gi / 4) * ch;
+                    var gl = document.createElementNS(svgNS, 'line');
+                    gl.setAttribute('x1', P.l); gl.setAttribute('x2', W - P.r);
+                    gl.setAttribute('y1', gy); gl.setAttribute('y2', gy);
+                    gl.setAttribute('stroke', 'var(--border)'); gl.setAttribute('stroke-width', '0.5');
+                    rtSvg.appendChild(gl);
+                }
+
+                // Line helper
+                function rtLine(data, yFn, color) {
+                    var d = '';
+                    for (var i = 0; i < data.length; i++) {
+                        d += (i === 0 ? 'M' : 'L') + rtSx(data[i].t).toFixed(1) + ',' + yFn(data[i]).toFixed(1);
+                    }
+                    var p = document.createElementNS(svgNS, 'path');
+                    p.setAttribute('d', d);
+                    p.setAttribute('stroke', color);
+                    p.setAttribute('stroke-width', '1.5');
+                    p.setAttribute('fill', 'none');
+                    p.setAttribute('stroke-linejoin', 'round');
+                    rtSvg.appendChild(p);
+                }
+
+                rtLine(rates, function(r) { return rtSyM(r.mem); }, 'steelblue');
+                rtLine(rates, function(r) { return rtSyR(r.hps); }, '#1FB437');
+                rtLine(rates, function(r) { return rtSyR(r.mps); }, '#B41F1F');
+
+                // Axis labels
+                function rtLabel(x, y, text, anchor) {
+                    var t = document.createElementNS(svgNS, 'text');
+                    t.setAttribute('x', x); t.setAttribute('y', y);
+                    t.setAttribute('text-anchor', anchor || 'start');
+                    t.setAttribute('fill', 'var(--text-muted)');
+                    t.setAttribute('font-size', '9px');
+                    t.setAttribute('font-family', 'var(--mono)');
+                    t.textContent = text;
+                    rtSvg.appendChild(t);
+                }
+
+                function rtFmtRate(v) {
+                    if (v >= 1000) return (v / 1000).toFixed(1) + 'k/s';
+                    if (v >= 100) return Math.round(v) + '/s';
+                    if (v >= 1) return v.toFixed(1) + '/s';
+                    return v.toFixed(2) + '/s';
+                }
+
+                function rtShortSizeD(b, d) {
+                    if (b > 1048576) return (b / 1048576).toFixed(d) + 'M';
+                    if (b > 1024) return (b / 1024).toFixed(d) + 'k';
+                    return Math.round(b) + 'B';
+                }
+
+                // Find minimum precision where top/bottom labels differ
+                var memHi, memLo;
+                for (var md = 1; md <= 4; md++) {
+                    memHi = rtShortSizeD(maxMem, md);
+                    memLo = rtShortSizeD(minMem, md);
+                    if (memHi !== memLo) break;
+                }
+
+                rtLabel(P.l - 4, P.t + 8, rtFmtRate(maxRate), 'end');
+                rtLabel(P.l - 4, P.t + ch, '0/s', 'end');
+                if (memHi !== memLo) {
+                    rtLabel(W - P.r + 4, P.t + 8, memHi);
+                    rtLabel(W - P.r + 4, P.t + ch, memLo);
+                } else {
+                    rtLabel(W - P.r + 4, P.t + ch / 2 + 4, memHi);
+                }
+
+                rtContainer.appendChild(rtSvg);
+
+                // Legend with current values
+                var last = rates[rates.length - 1];
+                var legend = document.createElement('div');
+                legend.className = 'rt-legend';
+                legend.innerHTML =
+                    '<span><span style="color:#1FB437">\u25CF</span> ' + rtFmtRate(last.hps) + ' hits</span>' +
+                    '<span><span style="color:#B41F1F">\u25CF</span> ' + rtFmtRate(last.mps) + ' misses</span>' +
+                    '<span><span style="color:steelblue">\u25CF</span> ' + sizeForHumans(last.mem) + '</span>';
+                rtContainer.appendChild(legend);
+            }
         }
     })();
     </script>
