@@ -4,7 +4,7 @@ if (!extension_loaded('Zend OPcache')) {
     require __DIR__ . '/data-sample.php';
 }
 
-if (isset($_GET['clear']) && $_GET['clear'] === '1') {
+if (isset($_GET['clear']) && $_GET['clear'] === '1' && function_exists('opcache_reset')) {
     opcache_reset();
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
@@ -152,6 +152,10 @@ class OpCacheDataModel
             'opcache.validate_root' => '0',
             'opcache.validate_timestamps' => '1',
         ];
+
+        if (PHP_MAJOR_VERSION !== 8) {
+            return $defaults;
+        }
 
         $minor = PHP_MINOR_VERSION;
 
