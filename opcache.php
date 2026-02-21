@@ -13,7 +13,7 @@ if (!$readonly && isset($_GET['clear']) && $_GET['clear'] === '1' && function_ex
     exit;
 }
 
-if (!$readonly && isset($_GET['invalidate']) && function_exists('opcache_invalidate')) {
+if (!$readonly && isset($_GET['invalidate']) && is_string($_GET['invalidate']) && $_GET['invalidate'] !== '' && function_exists('opcache_invalidate')) {
     opcache_invalidate($_GET['invalidate'], true);
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
@@ -2458,26 +2458,29 @@ $noOpcache = !extension_loaded('Zend OPcache');
         var RT_KEY = 'opcache-history';
         var RT_MAX = 120;
         var RT_STALE = 300000; // 5 min
-
-        var rtPoint = {
-            t: Date.now(),
-            h: dataset.hits[1],
-            m: dataset.hits[0],
-            mem: dataset.memory[0]
-        };
+        var rtAutoRefreshOn = sessionStorage.getItem('opcache-auto-refresh') === '1';
 
         var rtHistory = [];
-        try { var _s = sessionStorage.getItem(RT_KEY); if (_s) rtHistory = JSON.parse(_s); } catch(e) {}
+        if (rtAutoRefreshOn) {
+            var rtPoint = {
+                t: Date.now(),
+                h: dataset.hits[1],
+                m: dataset.hits[0],
+                mem: dataset.memory[0]
+            };
 
-        if (rtHistory.length > 0 && rtPoint.t - rtHistory[rtHistory.length - 1].t > RT_STALE) {
-            rtHistory = [];
+            try { var _s = sessionStorage.getItem(RT_KEY); if (_s) rtHistory = JSON.parse(_s); } catch(e) {}
+
+            if (rtHistory.length > 0 && rtPoint.t - rtHistory[rtHistory.length - 1].t > RT_STALE) {
+                rtHistory = [];
+            }
+
+            rtHistory.push(rtPoint);
+            if (rtHistory.length > RT_MAX) rtHistory = rtHistory.slice(-RT_MAX);
+            try { sessionStorage.setItem(RT_KEY, JSON.stringify(rtHistory)); } catch(e) {}
         }
 
-        rtHistory.push(rtPoint);
-        if (rtHistory.length > RT_MAX) rtHistory = rtHistory.slice(-RT_MAX);
-        try { sessionStorage.setItem(RT_KEY, JSON.stringify(rtHistory)); } catch(e) {}
-
-        if (rtContainer && rtHistory.length >= 2) {
+        if (rtAutoRefreshOn && rtContainer && rtHistory.length >= 2) {
             rtContainer.style.display = 'block';
 
             var rates = [];
