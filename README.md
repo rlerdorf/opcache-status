@@ -7,14 +7,17 @@ A single-file OPcache status page for PHP 8.2+. Drop `opcache.php` into any dire
 
 ### Features
 
-- **Status tab** — all `opcache_get_status()` metrics at a glance
-- **Configuration tab** — current directives with changed values highlighted, inline documentation from php.net, and human-readable formatting (memory sizes, time values, percentages)
-- **Health tab** — six checks (memory, keys, interned strings, JIT buffer, wasted memory, hit rate) with green/yellow/red indicators, progress bars, and tuning suggestions
-- **Scripts tab** — sortable table of all cached scripts by hits, memory, or path
+- **Status tab** — all `opcache_get_status()` metrics at a glance, plus preload script and user when `opcache.preload` is configured
+- **Configuration tab** — current directives with changed values highlighted, inline documentation from php.net, human-readable formatting (memory sizes, time values, percentages), and a blacklisted paths section
+- **Health tab** — seven checks (memory, keys, interned strings, JIT buffer, wasted memory, hit rate, file cache) with green/yellow/red/info indicators, progress bars, and tuning suggestions
+- **Scripts tab** — sortable table of all cached scripts by hits, memory, or path with per-script cache invalidation on hover
+- **Cache management** — reset the entire cache or invalidate individual scripts, with confirmation modals that warn about the impact of a full reset
+- **Auto-refresh** — toggle a 5-second reload cycle with a live activity chart showing cache hits/s, misses/s, and memory usage over time
 - **Donut charts** — memory, keys, hits, restarts, and conditionally JIT and interned strings
 - **Squarified treemap** — interactive visualization of cached scripts by memory usage with drill-down navigation, inline and fullscreen modes
 - **Dark mode** — automatic via `prefers-color-scheme`
 - **Responsive** — CSS Grid layout adapts to narrow screens
+- **Read-only mode** — set `$readonly = true` at the top of `opcache.php` to disable all cache modification actions (reset and invalidate)
 
 Everything is self-contained in a single PHP file with inline CSS and vanilla JavaScript. No jQuery, no D3.js, no CDN scripts.
 
