@@ -23,15 +23,15 @@ if (isset($_GET['json']) && $_GET['json'] === '1') {
     header('Content-Type: application/json');
     $dataModel = new OpCacheDataModel();
     $dataModel->buildScriptData();
-    echo json_encode([
-        'dataset' => json_decode($dataModel->getGraphDataSetJson(), true),
-        'healthChecks' => $dataModel->getHealthChecks(),
-        'scriptList' => json_decode($dataModel->getScriptListJson(), true),
-        'scriptData' => json_decode($dataModel->getScriptsJson(), true),
-        'uptime' => $dataModel->getUptime(),
-        'scriptCount' => $dataModel->getScriptStatusCount(),
-        'statusRows' => $dataModel->getStatusDataRows(),
-    ]);
+    echo '{'
+        . '"dataset":' . $dataModel->getGraphDataSetJson() . ','
+        . '"healthChecks":' . json_encode($dataModel->getHealthChecks()) . ','
+        . '"scriptList":' . $dataModel->getScriptListJson() . ','
+        . '"scriptData":' . $dataModel->getScriptsJson() . ','
+        . '"uptime":' . json_encode($dataModel->getUptime()) . ','
+        . '"scriptCount":' . json_encode($dataModel->getScriptStatusCount()) . ','
+        . '"statusRows":' . json_encode($dataModel->getStatusDataRows())
+        . '}';
     exit;
 }
 
@@ -2248,7 +2248,6 @@ $noOpcache = !extension_loaded('Zend OPcache');
                         };
                         if (innerRect.w > 4 && innerRect.h > 4 && innerItems.length > 0) {
                             var subRects = squarify(innerItems, innerRect);
-                            var innerMinDim = minDim;
                             for (var s = 0; s < subRects.length; s++) {
                                 var sr = subRects[s];
                                 var sn = sr.node;
@@ -2835,6 +2834,9 @@ $noOpcache = !extension_loaded('Zend OPcache');
                 // Push realtime chart data point and re-render
                 pushRealtimePoint();
                 renderRealtimeChart();
+            };
+            xhr.onerror = function() {
+                stopAutoRefresh();
             };
             xhr.send();
         }
