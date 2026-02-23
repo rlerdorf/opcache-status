@@ -624,7 +624,7 @@ class OpCacheDataModel
             ];
         }
 
-        if (isset($this->status['interned_strings_usage']['buffer_size'], $this->status['interned_strings_usage']['used_memory']) && $this->status['interned_strings_usage']['buffer_size'] > 0) {
+        if (isset($this->status['interned_strings_usage']['buffer_size'], $this->status['interned_strings_usage']['used_memory'], $this->status['interned_strings_usage']['free_memory']) && $this->status['interned_strings_usage']['buffer_size'] > 0) {
             $dataset['interned'] = [
                 $this->status['interned_strings_usage']['used_memory'],
                 $this->status['interned_strings_usage']['free_memory'],
@@ -2767,9 +2767,9 @@ $noOpcache = !extension_loaded('Zend OPcache');
             var xhr = new XMLHttpRequest();
             xhr.open('GET', '?json=1');
             xhr.onload = function() {
-                if (xhr.status !== 200) return;
+                if (xhr.status !== 200) { stopAutoRefresh(); return; }
                 var data;
-                try { data = JSON.parse(xhr.responseText); } catch(e) { return; }
+                try { data = JSON.parse(xhr.responseText); } catch(e) { stopAutoRefresh(); return; }
 
                 // Update donut chart data
                 dataset = data.dataset;
