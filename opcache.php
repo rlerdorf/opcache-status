@@ -19,6 +19,22 @@ if (!$readonly && isset($_GET['invalidate']) && is_string($_GET['invalidate']) &
     exit;
 }
 
+if (isset($_GET['json']) && $_GET['json'] === '1') {
+    header('Content-Type: application/json');
+    $dataModel = new OpCacheDataModel();
+    $dataModel->buildScriptData();
+    echo json_encode([
+        'dataset' => json_decode($dataModel->getGraphDataSetJson(), true),
+        'healthChecks' => $dataModel->getHealthChecks(),
+        'scriptList' => json_decode($dataModel->getScriptListJson(), true),
+        'scriptData' => json_decode($dataModel->getScriptsJson(), true),
+        'uptime' => $dataModel->getUptime(),
+        'scriptCount' => $dataModel->getScriptStatusCount(),
+        'statusRows' => $dataModel->getStatusDataRows(),
+    ]);
+    exit;
+}
+
 class OpCacheDataModel
 {
     private const THOUSAND_SEPARATOR = true;
@@ -52,11 +68,13 @@ class OpCacheDataModel
         $lastRestart = $this->status['opcache_statistics']['last_restart_time'] ?? 0;
         $since = $lastRestart > 0 ? $lastRestart : $start;
         $diff = (new \DateTimeImmutable("@$since"))->diff(new \DateTimeImmutable());
-        if ($diff->y > 0) return $diff->format('%yy %mmo');
-        if ($diff->m > 0) return $diff->format('%mmo %dd');
-        if ($diff->d > 0) return $diff->format('%dd %hh');
-        if ($diff->h > 0) return $diff->format('%hh %im');
-        return $diff->format('%im %ss');
+        return match(true) {
+            $diff->y > 0 => $diff->format('%yy %mmo'),
+            $diff->m > 0 => $diff->format('%mmo %dd'),
+            $diff->d > 0 => $diff->format('%dd %hh'),
+            $diff->h > 0 => $diff->format('%hh %im'),
+            default       => $diff->format('%im %ss'),
+        };
     }
 
     public function getStatusDataRows(): string
@@ -458,7 +476,7 @@ class OpCacheDataModel
         ];
 
         // 3. Interned Strings
-        if (isset($this->status['interned_strings_usage']['buffer_size']) && $this->status['interned_strings_usage']['buffer_size'] > 0) {
+        if (isset($this->status['interned_strings_usage']['buffer_size'], $this->status['interned_strings_usage']['used_memory']) && $this->status['interned_strings_usage']['buffer_size'] > 0) {
             $is = $this->status['interned_strings_usage'];
             $isUtil = ($is['used_memory'] / $is['buffer_size']) * 100;
             $isStatus = $this->utilizationStatus($isUtil);
@@ -473,7 +491,7 @@ class OpCacheDataModel
         }
 
         // 4. JIT Buffer
-        if (isset($this->status['jit']['buffer_size'])) {
+        if (isset($this->status['jit']['buffer_size'], $this->status['jit']['buffer_free'])) {
             $jit = $this->status['jit'];
             if ($jit['buffer_size'] > 0) {
                 $jitUsed = $jit['buffer_size'] - $jit['buffer_free'];
@@ -598,7 +616,7 @@ class OpCacheDataModel
             $this->status['opcache_statistics']['hash_restarts'],
         ];
 
-        if (isset($this->status['jit']['buffer_size']) && $this->status['jit']['buffer_size'] > 0) {
+        if (isset($this->status['jit']['buffer_size'], $this->status['jit']['buffer_free']) && $this->status['jit']['buffer_size'] > 0) {
             $dataset['jit'] = [
                 $this->status['jit']['buffer_size'] - $this->status['jit']['buffer_free'],
                 $this->status['jit']['buffer_free'],
@@ -606,7 +624,7 @@ class OpCacheDataModel
             ];
         }
 
-        if (isset($this->status['interned_strings_usage']['buffer_size']) && $this->status['interned_strings_usage']['buffer_size'] > 0) {
+        if (isset($this->status['interned_strings_usage']['buffer_size'], $this->status['interned_strings_usage']['used_memory']) && $this->status['interned_strings_usage']['buffer_size'] > 0) {
             $dataset['interned'] = [
                 $this->status['interned_strings_usage']['used_memory'],
                 $this->status['interned_strings_usage']['free_memory'],
@@ -682,7 +700,7 @@ class OpCacheDataModel
         $array = ['name' => $name, 'children' => []];
 
         foreach ($value as $k => $v) {
-            $array['children'][] = $this->processPartition($v, $k);
+            $array['children'][] = $this->processPartition($v, (string)$k);
         }
 
         return $array;
@@ -744,9 +762,11 @@ class OpCacheDataModel
 
     private function utilizationStatus(float $pct): string
     {
-        if ($pct > 75) return 'red';
-        if ($pct >= 50) return 'yellow';
-        return 'green';
+        return match(true) {
+            $pct > 75  => 'red',
+            $pct >= 50 => 'yellow',
+            default    => 'green',
+        };
     }
 
     private function arrayPset(array &$array, string $key, array $value): void
@@ -842,11 +862,19 @@ $noOpcache = !extension_loaded('Zend OPcache');
             background: var(--bg-alt);
         }
         .actions a {
+            display: inline-block;
+            padding: 4px 12px;
+            border: 1px solid var(--danger);
+            border-radius: var(--radius);
+            background: var(--bg);
             color: var(--danger);
             text-decoration: none;
+            font-size: 0.9em;
+            font-family: var(--font);
             font-weight: 500;
+            cursor: pointer;
         }
-        .actions a:hover { text-decoration: underline; }
+        .actions a:hover { background: var(--danger); color: #fff; }
         .main-layout {
             display: grid;
             grid-template-columns: 1fr 400px;
@@ -1180,6 +1208,18 @@ $noOpcache = !extension_loaded('Zend OPcache');
             color: #fff;
             border-color: var(--accent);
         }
+        .auto-refresh-select {
+            padding: 4px 6px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.9em;
+            font-family: var(--font);
+            cursor: pointer;
+            vertical-align: middle;
+        }
+        .auto-refresh-select:hover { border-color: var(--accent); }
         .auto-refresh-btn.active::before {
             content: '';
             display: inline-block;
@@ -1278,6 +1318,9 @@ $noOpcache = !extension_loaded('Zend OPcache');
             stroke-width: 3px;
             paint-order: stroke fill;
         }
+        #inline-partition text.agg-label {
+            stroke: none;
+        }
         #fullscreen-treemap {
             background: var(--accent);
             color: #fff;
@@ -1352,6 +1395,9 @@ $noOpcache = !extension_loaded('Zend OPcache');
             stroke-width: 3px;
             paint-order: stroke fill;
         }
+        #partition text.agg-label {
+            stroke: none;
+        }
     </style>
 </head>
 <body>
@@ -1367,6 +1413,12 @@ $noOpcache = !extension_loaded('Zend OPcache');
             <a href="?clear=1" id="reset-cache-link">Reset cache</a>
             <?php endif; ?>
             <button class="auto-refresh-btn" id="auto-refresh-btn">Auto-refresh</button>
+            <select id="auto-refresh-interval" class="auto-refresh-select">
+                <option value="2000">2s</option>
+                <option value="5000" selected>5s</option>
+                <option value="10000">10s</option>
+                <option value="30000">30s</option>
+            </select>
         </div>
 
         <div class="main-layout">
@@ -1803,13 +1855,15 @@ $noOpcache = !extension_loaded('Zend OPcache');
         // =============================================
         var healthChecks = <?= $dataModel->getHealthChecksJson() ?>;
         var healthContainer = document.getElementById('health-checks');
-        if (healthContainer && healthChecks.length > 0) {
-            var statusColors = {
-                green: 'var(--success)',
-                yellow: 'var(--warning)',
-                red: 'var(--danger)',
-                info: 'var(--accent)'
-            };
+        var statusColors = {
+            green: 'var(--success)',
+            yellow: 'var(--warning)',
+            red: 'var(--danger)',
+            info: 'var(--accent)'
+        };
+
+        function renderHealthCards() {
+            if (!healthContainer || healthChecks.length === 0) return;
             var html = '';
             for (var i = 0; i < healthChecks.length; i++) {
                 var c = healthChecks[i];
@@ -1828,6 +1882,7 @@ $noOpcache = !extension_loaded('Zend OPcache');
             }
             healthContainer.innerHTML = html;
         }
+        renderHealthCards();
 
         // =============================================
         //  CONFIRMATION MODAL
@@ -2120,11 +2175,30 @@ $noOpcache = !extension_loaded('Zend OPcache');
             var rects = squarify(children, { x: 0, y: 0, w: w, h: h });
             var leafMM = getLeafMinMax(root);
             var pad = 3;
+            var totalLeaves = collectLeaves(root).length;
+            var viewArea = w * h;
+            var avgArea = viewArea / Math.max(1, totalLeaves);
+            var minDim = Math.max(4, Math.ceil(Math.sqrt(avgArea) * 0.8));
+            if (totalLeaves > 1000) minDim = Math.max(minDim, Math.ceil(200 / Math.sqrt(Math.max(w, h))));
 
+            var topSkippedSize = 0, topSkippedCount = 0, topRendered = 0;
+            var topSkipMinX = Infinity, topSkipMinY = Infinity, topSkipMaxX = 0, topSkipMaxY = 0;
+            var maxTopLeaves = Math.max(200, Math.floor((w * h) / 400));
             for (var i = 0; i < rects.length; i++) {
                 var r = rects[i];
                 var node = r.node;
                 var isDir = node.children && node.children.length > 0;
+
+                if (!isDir && rects.length > 8 && (r.w < minDim || r.h < minDim || topRendered >= maxTopLeaves)) {
+                    topSkippedSize += node.size || 0;
+                    topSkippedCount++;
+                    if (r.x < topSkipMinX) topSkipMinX = r.x;
+                    if (r.y < topSkipMinY) topSkipMinY = r.y;
+                    if (r.x + r.w > topSkipMaxX) topSkipMaxX = r.x + r.w;
+                    if (r.y + r.h > topSkipMaxY) topSkipMaxY = r.y + r.h;
+                    continue;
+                }
+
                 var g = document.createElementNS(svgNS, 'g');
 
                 if (isDir) {
@@ -2156,31 +2230,60 @@ $noOpcache = !extension_loaded('Zend OPcache');
                         hdr.setAttribute('fill-opacity', '0.8');
                         g.appendChild(hdr);
 
-                        // Flatten all leaves inside this directory and render them
-                        var leaves = collectLeaves(node);
+                        // Show immediate children; subdirs as sized blocks
+                        var innerItems = [];
+                        for (var ci = 0; ci < (node.children || []).length; ci++) {
+                            var child = node.children[ci];
+                            if (child.size !== undefined) {
+                                innerItems.push(child);
+                            } else {
+                                innerItems.push({ name: child.name, size: getSize(child), _dir: child });
+                            }
+                        }
                         var innerRect = {
                             x: r.x + pad,
                             y: r.y + pad / 2 + headerH + 2,
                             w: Math.max(0, r.w - pad * 2),
                             h: Math.max(0, r.h - pad - headerH - 2)
                         };
-                        if (innerRect.w > 4 && innerRect.h > 4 && leaves.length > 0) {
-                            var subRects = squarify(leaves, innerRect);
+                        if (innerRect.w > 4 && innerRect.h > 4 && innerItems.length > 0) {
+                            var subRects = squarify(innerItems, innerRect);
+                            var innerMinDim = minDim;
                             for (var s = 0; s < subRects.length; s++) {
                                 var sr = subRects[s];
                                 var sn = sr.node;
+                                if (sr.w < 3 || sr.h < 3) continue;
                                 var subRect = document.createElementNS(svgNS, 'rect');
                                 subRect.setAttribute('x', sr.x + 1);
                                 subRect.setAttribute('y', sr.y + 1);
                                 subRect.setAttribute('width', Math.max(0, sr.w - 2));
                                 subRect.setAttribute('height', Math.max(0, sr.h - 2));
                                 subRect.setAttribute('rx', 2);
-                                subRect.setAttribute('fill', heatColor(sn.size, leafMM.min, leafMM.max));
-                                subRect.setAttribute('fill-opacity', '0.85');
-                                subRect.setAttribute('stroke', 'var(--bg)');
-                                subRect.setAttribute('stroke-width', '1');
+                                if (sn._dir) {
+                                    subRect.setAttribute('fill', dirColor);
+                                    subRect.setAttribute('fill-opacity', '0.35');
+                                    subRect.setAttribute('stroke', dirColor);
+                                    subRect.setAttribute('stroke-width', '1');
+                                    subRect.style.cursor = 'pointer';
+                                    (function(dn) {
+                                        subRect.addEventListener('click', function(e) {
+                                            e.stopPropagation();
+                                            drillStack.push(dn);
+                                            renderTreemap(dn);
+                                            updateBreadcrumb();
+                                        });
+                                    })(sn._dir);
+                                } else {
+                                    subRect.setAttribute('fill', heatColor(sn.size, leafMM.min, leafMM.max));
+                                    subRect.setAttribute('fill-opacity', '0.85');
+                                    subRect.setAttribute('stroke', 'var(--bg)');
+                                    subRect.setAttribute('stroke-width', '1');
+                                }
                                 var subTitle = document.createElementNS(svgNS, 'title');
-                                subTitle.textContent = sn.name + '\n' + sizeForHumans(sn.size) + (sn.hits !== undefined ? '\nHits: ' + formatValue(sn.hits) : '');
+                                var subTip = (sn._dir ? sn.name + '/\n' : sn.name + '\n') + sizeForHumans(sn.size);
+                                if (sn.hits !== undefined) subTip += '\nHits: ' + formatValue(sn.hits);
+                                if (sn._dir) subTip += '\nClick to drill in';
+                                subTitle.textContent = subTip;
                                 subRect.appendChild(subTitle);
                                 g.appendChild(subRect);
                                 if (sr.w > 36 && sr.h > 13) {
@@ -2190,7 +2293,7 @@ $noOpcache = !extension_loaded('Zend OPcache');
                                     st.setAttribute('fill', '#fff');
                                     st.setAttribute('font-size', '10px');
                                     var sMaxC = Math.floor((sr.w - 8) / 6);
-                                    var sLabel = sn.name || '';
+                                    var sLabel = (sn.name || '') + (sn._dir ? '/' : '');
                                     if (sLabel.length > sMaxC) sLabel = sLabel.substring(0, Math.max(0, sMaxC - 1)) + '\u2026';
                                     st.textContent = sLabel;
                                     g.appendChild(st);
@@ -2265,9 +2368,51 @@ $noOpcache = !extension_loaded('Zend OPcache');
                             g.appendChild(text2);
                         }
                     }
+                    topRendered++;
                 }
 
                 tSvg.appendChild(g);
+            }
+            if (topSkippedCount > 3) {
+                var topAggW = Math.max(0, topSkipMaxX - topSkipMinX - 2);
+                var topAggH = Math.max(0, topSkipMaxY - topSkipMinY - 2);
+                var ag = document.createElementNS(svgNS, 'g');
+                var aRect = document.createElementNS(svgNS, 'rect');
+                aRect.setAttribute('x', topSkipMinX + 1);
+                aRect.setAttribute('y', topSkipMinY + 1);
+                aRect.setAttribute('width', topAggW);
+                aRect.setAttribute('height', topAggH);
+                aRect.setAttribute('rx', 2);
+                aRect.setAttribute('fill', 'var(--fg)');
+                aRect.setAttribute('fill-opacity', '0.12');
+                var topAggLine1 = '+' + formatValue(topSkippedCount) + ' files';
+                var topAggLine2 = sizeForHumans(topSkippedSize);
+                var aTitle = document.createElementNS(svgNS, 'title');
+                aTitle.textContent = topAggLine1 + ' (' + topAggLine2 + ')';
+                aRect.appendChild(aTitle);
+                ag.appendChild(aRect);
+                if (topAggW > 40 && topAggH > 14) {
+                    var topAggText = document.createElementNS(svgNS, 'text');
+                    topAggText.setAttribute('class', 'agg-label');
+                    topAggText.setAttribute('text-anchor', 'middle');
+                    topAggText.setAttribute('fill', '#222');
+                    topAggText.setAttribute('font-weight', '600');
+                    topAggText.setAttribute('font-size', '11px');
+                    var topSpan1 = document.createElementNS(svgNS, 'tspan');
+                    topSpan1.setAttribute('x', topSkipMinX + topAggW / 2 + 1);
+                    topSpan1.setAttribute('y', topSkipMinY + topAggH / 2 - 1);
+                    topSpan1.textContent = topAggLine1;
+                    topAggText.appendChild(topSpan1);
+                    if (topAggH > 28) {
+                        var topSpan2 = document.createElementNS(svgNS, 'tspan');
+                        topSpan2.setAttribute('x', topSkipMinX + topAggW / 2 + 1);
+                        topSpan2.setAttribute('y', topSkipMinY + topAggH / 2 + 13);
+                        topSpan2.textContent = topAggLine2;
+                        topAggText.appendChild(topSpan2);
+                    }
+                    ag.appendChild(topAggText);
+                }
+                tSvg.appendChild(ag);
             }
             activePartitionEl.appendChild(tSvg);
         }
@@ -2416,41 +2561,13 @@ $noOpcache = !extension_loaded('Zend OPcache');
         //  AUTO-REFRESH TOGGLE
         // =============================================
         var autoRefreshBtn = document.getElementById('auto-refresh-btn');
+        var autoRefreshSelect = document.getElementById('auto-refresh-interval');
         var autoRefreshInterval = null;
-        var AUTO_REFRESH_MS = 5000;
-
-        function startAutoRefresh() {
-            sessionStorage.setItem('opcache-auto-refresh', '1');
-            autoRefreshBtn.classList.add('active');
-            autoRefreshBtn.textContent = 'Refreshing (5s)';
-            autoRefreshInterval = setInterval(function() { location.reload(); }, AUTO_REFRESH_MS);
+        var AUTO_REFRESH_MS = parseInt(sessionStorage.getItem('opcache-refresh-ms') || '5000', 10);
+        if (autoRefreshSelect) {
+            autoRefreshSelect.value = String(AUTO_REFRESH_MS);
         }
 
-        function stopAutoRefresh() {
-            sessionStorage.removeItem('opcache-auto-refresh');
-            sessionStorage.removeItem('opcache-history');
-            autoRefreshBtn.classList.remove('active');
-            autoRefreshBtn.textContent = 'Auto-refresh';
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
-                autoRefreshInterval = null;
-            }
-            var rtc = document.getElementById('realtime-chart');
-            if (rtc) { rtc.style.display = 'none'; rtc.innerHTML = ''; }
-        }
-
-        if (autoRefreshBtn) {
-            autoRefreshBtn.addEventListener('click', function() {
-                if (autoRefreshInterval) {
-                    stopAutoRefresh();
-                } else {
-                    startAutoRefresh();
-                }
-            });
-            if (sessionStorage.getItem('opcache-auto-refresh') === '1') {
-                startAutoRefresh();
-            }
-        }
         // =============================================
         //  REALTIME MONITORING CHART
         // =============================================
@@ -2458,29 +2575,50 @@ $noOpcache = !extension_loaded('Zend OPcache');
         var RT_KEY = 'opcache-history';
         var RT_MAX = 120;
         var RT_STALE = 300000; // 5 min
-        var rtAutoRefreshOn = sessionStorage.getItem('opcache-auto-refresh') === '1';
-
         var rtHistory = [];
-        if (rtAutoRefreshOn) {
-            var rtPoint = {
+        try { var _s = sessionStorage.getItem(RT_KEY); if (_s) rtHistory = JSON.parse(_s); } catch(e) {}
+
+        function rtNice(v) {
+            var e = Math.pow(10, Math.floor(Math.log10(v)));
+            var f = v / e;
+            return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * e;
+        }
+
+        function rtFmtRate(v) {
+            if (v >= 1000) return (v / 1000).toFixed(1) + 'k/s';
+            if (v >= 100) return Math.round(v) + '/s';
+            if (v >= 1) return v.toFixed(1) + '/s';
+            return v.toFixed(2) + '/s';
+        }
+
+        function rtShortSizeD(b, d) {
+            if (b > 1048576) return (b / 1048576).toFixed(d) + 'M';
+            if (b > 1024) return (b / 1024).toFixed(d) + 'k';
+            return Math.round(b) + 'B';
+        }
+
+        function pushRealtimePoint() {
+            var pt = {
                 t: Date.now(),
                 h: dataset.hits[1],
                 m: dataset.hits[0],
                 mem: dataset.memory[0]
             };
-
-            try { var _s = sessionStorage.getItem(RT_KEY); if (_s) rtHistory = JSON.parse(_s); } catch(e) {}
-
-            if (rtHistory.length > 0 && rtPoint.t - rtHistory[rtHistory.length - 1].t > RT_STALE) {
+            if (rtHistory.length > 0 && pt.t - rtHistory[rtHistory.length - 1].t > RT_STALE) {
                 rtHistory = [];
             }
-
-            rtHistory.push(rtPoint);
+            rtHistory.push(pt);
             if (rtHistory.length > RT_MAX) rtHistory = rtHistory.slice(-RT_MAX);
             try { sessionStorage.setItem(RT_KEY, JSON.stringify(rtHistory)); } catch(e) {}
         }
 
-        if (rtAutoRefreshOn && rtContainer && rtHistory.length >= 2) {
+        function renderRealtimeChart() {
+            if (!rtContainer) return;
+            rtContainer.innerHTML = '';
+            if (rtHistory.length < 2) {
+                rtContainer.style.display = 'none';
+                return;
+            }
             rtContainer.style.display = 'block';
 
             var rates = [];
@@ -2495,148 +2633,257 @@ $noOpcache = !extension_loaded('Zend OPcache');
                 });
             }
 
-            if (rates.length >= 1) {
-                var W = rtContainer.clientWidth || 380;
-                var H = 150;
-                var P = {l: 44, r: 44, t: 8, b: 20};
-                var cw = W - P.l - P.r, ch = H - P.t - P.b;
-
-                var tMin = rates[0].t, tMax = rates[rates.length - 1].t;
-                if (tMax === tMin) tMax = tMin + 1;
-
-                var maxRate = 0, minMem = Infinity, maxMem = 0;
-                for (var ri = 0; ri < rates.length; ri++) {
-                    if (rates[ri].hps > maxRate) maxRate = rates[ri].hps;
-                    if (rates[ri].mps > maxRate) maxRate = rates[ri].mps;
-                    if (rates[ri].mem < minMem) minMem = rates[ri].mem;
-                    if (rates[ri].mem > maxMem) maxMem = rates[ri].mem;
-                }
-
-                maxRate = rtNice(maxRate || 1);
-                var memSpan = maxMem - minMem;
-                if (memSpan === 0) memSpan = maxMem * 0.05 || 1;
-                minMem = Math.max(0, minMem - memSpan * 0.2);
-                maxMem = maxMem + memSpan * 0.2;
-
-                function rtNice(v) {
-                    var e = Math.pow(10, Math.floor(Math.log10(v)));
-                    var f = v / e;
-                    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * e;
-                }
-
-                function rtSx(t) { return P.l + ((t - tMin) / (tMax - tMin)) * cw; }
-                function rtSyR(v) { return P.t + ch - (v / maxRate) * ch; }
-                function rtSyM(v) { return P.t + ch - ((v - minMem) / (maxMem - minMem)) * ch; }
-
-                // Header
-                var elapsed = (tMax - tMin) / 1000;
-                var hdr = document.createElement('div');
-                hdr.className = 'rt-header';
-                var hdrL = document.createElement('span');
-                hdrL.textContent = 'Live Activity';
-                var hdrR = document.createElement('span');
-                hdrR.textContent = elapsed >= 120
-                    ? Math.floor(elapsed / 60) + 'm ' + Math.round(elapsed % 60) + 's window'
-                    : Math.round(elapsed) + 's window';
-                hdr.appendChild(hdrL);
-                hdr.appendChild(hdrR);
-                rtContainer.appendChild(hdr);
-
-                // SVG
-                var rtSvg = document.createElementNS(svgNS, 'svg');
-                rtSvg.setAttribute('width', W);
-                rtSvg.setAttribute('height', H);
-
-                // Chart background
-                var rtBg = document.createElementNS(svgNS, 'rect');
-                rtBg.setAttribute('x', P.l); rtBg.setAttribute('y', P.t);
-                rtBg.setAttribute('width', cw); rtBg.setAttribute('height', ch);
-                rtBg.setAttribute('fill', 'var(--bg)'); rtBg.setAttribute('rx', '2');
-                rtSvg.appendChild(rtBg);
-
-                // Grid
-                for (var gi = 0; gi <= 4; gi++) {
-                    var gy = P.t + (gi / 4) * ch;
-                    var gl = document.createElementNS(svgNS, 'line');
-                    gl.setAttribute('x1', P.l); gl.setAttribute('x2', W - P.r);
-                    gl.setAttribute('y1', gy); gl.setAttribute('y2', gy);
-                    gl.setAttribute('stroke', 'var(--border)'); gl.setAttribute('stroke-width', '0.5');
-                    rtSvg.appendChild(gl);
-                }
-
-                // Line helper
-                function rtLine(data, yFn, color) {
-                    var d = '';
-                    for (var i = 0; i < data.length; i++) {
-                        d += (i === 0 ? 'M' : 'L') + rtSx(data[i].t).toFixed(1) + ',' + yFn(data[i]).toFixed(1);
-                    }
-                    var p = document.createElementNS(svgNS, 'path');
-                    p.setAttribute('d', d);
-                    p.setAttribute('stroke', color);
-                    p.setAttribute('stroke-width', '1.5');
-                    p.setAttribute('fill', 'none');
-                    p.setAttribute('stroke-linejoin', 'round');
-                    rtSvg.appendChild(p);
-                }
-
-                rtLine(rates, function(r) { return rtSyM(r.mem); }, 'steelblue');
-                rtLine(rates, function(r) { return rtSyR(r.hps); }, '#1FB437');
-                rtLine(rates, function(r) { return rtSyR(r.mps); }, '#B41F1F');
-
-                // Axis labels
-                function rtLabel(x, y, text, anchor) {
-                    var t = document.createElementNS(svgNS, 'text');
-                    t.setAttribute('x', x); t.setAttribute('y', y);
-                    t.setAttribute('text-anchor', anchor || 'start');
-                    t.setAttribute('fill', 'var(--text-muted)');
-                    t.setAttribute('font-size', '9px');
-                    t.setAttribute('font-family', 'var(--mono)');
-                    t.textContent = text;
-                    rtSvg.appendChild(t);
-                }
-
-                function rtFmtRate(v) {
-                    if (v >= 1000) return (v / 1000).toFixed(1) + 'k/s';
-                    if (v >= 100) return Math.round(v) + '/s';
-                    if (v >= 1) return v.toFixed(1) + '/s';
-                    return v.toFixed(2) + '/s';
-                }
-
-                function rtShortSizeD(b, d) {
-                    if (b > 1048576) return (b / 1048576).toFixed(d) + 'M';
-                    if (b > 1024) return (b / 1024).toFixed(d) + 'k';
-                    return Math.round(b) + 'B';
-                }
-
-                // Find minimum precision where top/bottom labels differ
-                var memHi, memLo;
-                for (var md = 1; md <= 4; md++) {
-                    memHi = rtShortSizeD(maxMem, md);
-                    memLo = rtShortSizeD(minMem, md);
-                    if (memHi !== memLo) break;
-                }
-
-                rtLabel(P.l - 4, P.t + 8, rtFmtRate(maxRate), 'end');
-                rtLabel(P.l - 4, P.t + ch, '0/s', 'end');
-                if (memHi !== memLo) {
-                    rtLabel(W - P.r + 4, P.t + 8, memHi);
-                    rtLabel(W - P.r + 4, P.t + ch, memLo);
-                } else {
-                    rtLabel(W - P.r + 4, P.t + ch / 2 + 4, memHi);
-                }
-
-                rtContainer.appendChild(rtSvg);
-
-                // Legend with current values
-                var last = rates[rates.length - 1];
-                var legend = document.createElement('div');
-                legend.className = 'rt-legend';
-                legend.innerHTML =
-                    '<span><span style="color:#1FB437">\u25CF</span> ' + rtFmtRate(last.hps) + ' hits</span>' +
-                    '<span><span style="color:#B41F1F">\u25CF</span> ' + rtFmtRate(last.mps) + ' misses</span>' +
-                    '<span><span style="color:steelblue">\u25CF</span> ' + sizeForHumans(last.mem) + '</span>';
-                rtContainer.appendChild(legend);
+            if (rates.length < 1) {
+                rtContainer.style.display = 'none';
+                return;
             }
+
+            var W = rtContainer.clientWidth || 380;
+            var H = 150;
+            var P = {l: 44, r: 44, t: 8, b: 20};
+            var cw = W - P.l - P.r, ch = H - P.t - P.b;
+
+            var tMin = rates[0].t, tMax = rates[rates.length - 1].t;
+            if (tMax === tMin) tMax = tMin + 1;
+
+            var maxRate = 0, minMem = Infinity, maxMem = 0;
+            for (var ri = 0; ri < rates.length; ri++) {
+                if (rates[ri].hps > maxRate) maxRate = rates[ri].hps;
+                if (rates[ri].mps > maxRate) maxRate = rates[ri].mps;
+                if (rates[ri].mem < minMem) minMem = rates[ri].mem;
+                if (rates[ri].mem > maxMem) maxMem = rates[ri].mem;
+            }
+
+            maxRate = rtNice(maxRate || 1);
+            var memSpan = maxMem - minMem;
+            if (memSpan === 0) memSpan = maxMem * 0.05 || 1;
+            minMem = Math.max(0, minMem - memSpan * 0.2);
+            maxMem = maxMem + memSpan * 0.2;
+
+            function rtSx(t) { return P.l + ((t - tMin) / (tMax - tMin)) * cw; }
+            function rtSyR(v) { return P.t + ch - (v / maxRate) * ch; }
+            function rtSyM(v) { return P.t + ch - ((v - minMem) / (maxMem - minMem)) * ch; }
+
+            // Header
+            var elapsed = (tMax - tMin) / 1000;
+            var hdr = document.createElement('div');
+            hdr.className = 'rt-header';
+            var hdrL = document.createElement('span');
+            hdrL.textContent = 'Live Activity';
+            var hdrR = document.createElement('span');
+            hdrR.textContent = elapsed >= 120
+                ? Math.floor(elapsed / 60) + 'm ' + Math.round(elapsed % 60) + 's window'
+                : Math.round(elapsed) + 's window';
+            hdr.appendChild(hdrL);
+            hdr.appendChild(hdrR);
+            rtContainer.appendChild(hdr);
+
+            // SVG
+            var rtSvg = document.createElementNS(svgNS, 'svg');
+            rtSvg.setAttribute('width', W);
+            rtSvg.setAttribute('height', H);
+
+            // Chart background
+            var rtBg = document.createElementNS(svgNS, 'rect');
+            rtBg.setAttribute('x', P.l); rtBg.setAttribute('y', P.t);
+            rtBg.setAttribute('width', cw); rtBg.setAttribute('height', ch);
+            rtBg.setAttribute('fill', 'var(--bg)'); rtBg.setAttribute('rx', '2');
+            rtSvg.appendChild(rtBg);
+
+            // Grid
+            for (var gi = 0; gi <= 4; gi++) {
+                var gy = P.t + (gi / 4) * ch;
+                var gl = document.createElementNS(svgNS, 'line');
+                gl.setAttribute('x1', P.l); gl.setAttribute('x2', W - P.r);
+                gl.setAttribute('y1', gy); gl.setAttribute('y2', gy);
+                gl.setAttribute('stroke', 'var(--border)'); gl.setAttribute('stroke-width', '0.5');
+                rtSvg.appendChild(gl);
+            }
+
+            // Line helper
+            function rtLine(data, yFn, color) {
+                var d = '';
+                for (var i = 0; i < data.length; i++) {
+                    d += (i === 0 ? 'M' : 'L') + rtSx(data[i].t).toFixed(1) + ',' + yFn(data[i]).toFixed(1);
+                }
+                var p = document.createElementNS(svgNS, 'path');
+                p.setAttribute('d', d);
+                p.setAttribute('stroke', color);
+                p.setAttribute('stroke-width', '1.5');
+                p.setAttribute('fill', 'none');
+                p.setAttribute('stroke-linejoin', 'round');
+                rtSvg.appendChild(p);
+            }
+
+            rtLine(rates, function(r) { return rtSyM(r.mem); }, 'steelblue');
+            rtLine(rates, function(r) { return rtSyR(r.hps); }, '#1FB437');
+            rtLine(rates, function(r) { return rtSyR(r.mps); }, '#B41F1F');
+
+            // Axis labels
+            function rtLabel(x, y, text, anchor) {
+                var t = document.createElementNS(svgNS, 'text');
+                t.setAttribute('x', x); t.setAttribute('y', y);
+                t.setAttribute('text-anchor', anchor || 'start');
+                t.setAttribute('fill', 'var(--text-muted)');
+                t.setAttribute('font-size', '9px');
+                t.setAttribute('font-family', 'var(--mono)');
+                t.textContent = text;
+                rtSvg.appendChild(t);
+            }
+
+            // Find minimum precision where top/bottom labels differ
+            var memHi, memLo;
+            for (var md = 1; md <= 4; md++) {
+                memHi = rtShortSizeD(maxMem, md);
+                memLo = rtShortSizeD(minMem, md);
+                if (memHi !== memLo) break;
+            }
+
+            rtLabel(P.l - 4, P.t + 8, rtFmtRate(maxRate), 'end');
+            rtLabel(P.l - 4, P.t + ch, '0/s', 'end');
+            if (memHi !== memLo) {
+                rtLabel(W - P.r + 4, P.t + 8, memHi);
+                rtLabel(W - P.r + 4, P.t + ch, memLo);
+            } else {
+                rtLabel(W - P.r + 4, P.t + ch / 2 + 4, memHi);
+            }
+
+            rtContainer.appendChild(rtSvg);
+
+            // Legend with current values
+            var last = rates[rates.length - 1];
+            var legend = document.createElement('div');
+            legend.className = 'rt-legend';
+            legend.innerHTML =
+                '<span><span style="color:#1FB437">\u25CF</span> ' + rtFmtRate(last.hps) + ' hits</span>' +
+                '<span><span style="color:#B41F1F">\u25CF</span> ' + rtFmtRate(last.mps) + ' misses</span>' +
+                '<span><span style="color:steelblue">\u25CF</span> ' + sizeForHumans(last.mem) + '</span>';
+            rtContainer.appendChild(legend);
+        }
+
+        // =============================================
+        //  AJAX DATA REFRESH
+        // =============================================
+        function refreshData() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '?json=1');
+            xhr.onload = function() {
+                if (xhr.status !== 200) return;
+                var data;
+                try { data = JSON.parse(xhr.responseText); } catch(e) { return; }
+
+                // Update donut chart data
+                dataset = data.dataset;
+
+                // Recompute statsInfo human-readable values from raw data
+                var memTotal = dataset.memory[0] + dataset.memory[1] + dataset.memory[2];
+                var wastedPct = memTotal > 0 ? ((dataset.memory[2] / memTotal) * 100).toFixed(2) : '0.00';
+                statsInfo.memory.values = [
+                    sizeForHumans(dataset.memory[0]),
+                    sizeForHumans(dataset.memory[1]),
+                    sizeForHumans(dataset.memory[2]) + ' (' + wastedPct + '%)'
+                ];
+                if (dataset.jit && statsInfo.jit) {
+                    statsInfo.jit.values = [sizeForHumans(dataset.jit[0]), sizeForHumans(dataset.jit[1])];
+                }
+                if (dataset.interned && statsInfo.interned) {
+                    statsInfo.interned.values = [sizeForHumans(dataset.interned[0]), sizeForHumans(dataset.interned[1])];
+                }
+
+                // Re-render donut + stats for current dataset selection
+                var currentKey = sessionStorage.getItem('opcache-dataset') || 'memory';
+                if (!dataset[currentKey]) currentKey = 'memory';
+                showDataset(currentKey);
+
+                // Update health cards
+                healthChecks = data.healthChecks;
+                renderHealthCards();
+
+                // Update scripts table
+                scriptList = data.scriptList;
+                renderScriptTable();
+
+                // Update treemap data and re-render at root
+                scriptData = data.scriptData;
+                if (!overlay.classList.contains('visible')) {
+                    drillStack = [scriptData];
+                    activePartitionEl = inlinePartitionEl;
+                    activeBreadcrumbEl = inlineBreadcrumbEl;
+                    renderTreemap(scriptData, inlinePartitionEl);
+                    updateBreadcrumb();
+                }
+
+                // Update uptime
+                var uptimeEl = document.querySelector('.uptime');
+                if (uptimeEl && data.uptime) {
+                    uptimeEl.textContent = 'Uptime: ' + data.uptime;
+                }
+
+                // Update script count in tab label
+                var scriptsLabel = document.querySelector('label[for="tab-scripts"]');
+                if (scriptsLabel) {
+                    scriptsLabel.textContent = 'Scripts (' + formatValue(data.scriptCount) + ')';
+                }
+
+                // Update status table
+                var statusTabEl = document.getElementById('tab-status');
+                if (statusTabEl) {
+                    var statusTbl = statusTabEl.parentNode.querySelector('table');
+                    if (statusTbl) statusTbl.innerHTML = data.statusRows;
+                }
+
+                // Push realtime chart data point and re-render
+                pushRealtimePoint();
+                renderRealtimeChart();
+            };
+            xhr.send();
+        }
+
+        function startAutoRefresh() {
+            sessionStorage.setItem('opcache-auto-refresh', '1');
+            autoRefreshBtn.classList.add('active');
+            autoRefreshBtn.textContent = 'Refreshing';
+            pushRealtimePoint();
+            renderRealtimeChart();
+            autoRefreshInterval = setInterval(refreshData, AUTO_REFRESH_MS);
+        }
+
+        function stopAutoRefresh() {
+            sessionStorage.removeItem('opcache-auto-refresh');
+            sessionStorage.removeItem('opcache-history');
+            rtHistory = [];
+            autoRefreshBtn.classList.remove('active');
+            autoRefreshBtn.textContent = 'Auto-refresh';
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+            if (rtContainer) { rtContainer.style.display = 'none'; rtContainer.innerHTML = ''; }
+        }
+
+        if (autoRefreshBtn) {
+            autoRefreshBtn.addEventListener('click', function() {
+                if (autoRefreshInterval) {
+                    stopAutoRefresh();
+                } else {
+                    startAutoRefresh();
+                }
+            });
+            if (sessionStorage.getItem('opcache-auto-refresh') === '1') {
+                startAutoRefresh();
+            }
+        }
+
+        if (autoRefreshSelect) {
+            autoRefreshSelect.addEventListener('change', function() {
+                AUTO_REFRESH_MS = parseInt(this.value, 10);
+                sessionStorage.setItem('opcache-refresh-ms', String(AUTO_REFRESH_MS));
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshBtn.textContent = 'Refreshing';
+                    autoRefreshInterval = setInterval(refreshData, AUTO_REFRESH_MS);
+                }
+            });
         }
     })();
     </script>
