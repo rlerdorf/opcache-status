@@ -68,7 +68,7 @@ class OpCacheDataModel
         $lastRestart = $this->status['opcache_statistics']['last_restart_time'] ?? 0;
         $since = $lastRestart > 0 ? $lastRestart : $start;
         $diff = (new \DateTimeImmutable("@$since"))->diff(new \DateTimeImmutable());
-        return match(true) {
+        return match (true) {
             $diff->y > 0 => $diff->format('%yy %mmo'),
             $diff->m > 0 => $diff->format('%mmo %dd'),
             $diff->d > 0 => $diff->format('%dd %hh'),
@@ -762,7 +762,7 @@ class OpCacheDataModel
 
     private function utilizationStatus(float $pct): string
     {
-        return match(true) {
+        return match (true) {
             $pct > 75  => 'red',
             $pct >= 50 => 'yellow',
             default    => 'green',
