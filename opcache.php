@@ -7,16 +7,18 @@ if (!extension_loaded('Zend OPcache')) {
     require __DIR__ . '/data-sample.php';
 }
 
-if (!$readonly && isset($_GET['clear']) && $_GET['clear'] === '1' && function_exists('opcache_reset')) {
-    opcache_reset();
-    header('Location: ' . $_SERVER['PHP_SELF']);
-    exit;
-}
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!$readonly && isset($_POST['clear']) && $_POST['clear'] === '1' && function_exists('opcache_reset')) {
+        opcache_reset();
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
+    }
 
-if (!$readonly && isset($_GET['invalidate']) && is_string($_GET['invalidate']) && $_GET['invalidate'] !== '' && function_exists('opcache_invalidate')) {
-    opcache_invalidate($_GET['invalidate'], true);
-    header('Location: ' . $_SERVER['PHP_SELF']);
-    exit;
+    if (!$readonly && isset($_POST['invalidate']) && is_string($_POST['invalidate']) && $_POST['invalidate'] !== '' && function_exists('opcache_invalidate')) {
+        opcache_invalidate($_POST['invalidate'], true);
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
+    }
 }
 
 if (isset($_GET['json']) && $_GET['json'] === '1') {
@@ -109,6 +111,17 @@ class OpCacheDataModel
                         $v = number_format($v);
                     }
 
+                    if (is_array($v)) {
+                        foreach ($v as $k2 => $v2) {
+                            if ($v2 === false) {
+                                $v2 = 'false';
+                            } elseif ($v2 === true) {
+                                $v2 = 'true';
+                            }
+                            $rows[] = "<tr><th>$k2</th><td>$v2</td></tr>\n";
+                        }
+                        continue;
+                    }
                     $rows[] = "<tr><th>$k</th><td>$v</td></tr>\n";
                 }
                 continue;
@@ -861,20 +874,19 @@ $noOpcache = !extension_loaded('Zend OPcache');
             border-radius: var(--radius);
             background: var(--bg-alt);
         }
-        .actions a {
+        #reset-cache-btn {
             display: inline-block;
             padding: 4px 12px;
             border: 1px solid var(--danger);
             border-radius: var(--radius);
             background: var(--bg);
             color: var(--danger);
-            text-decoration: none;
             font-size: 0.9em;
             font-family: var(--font);
             font-weight: 500;
             cursor: pointer;
         }
-        .actions a:hover { background: var(--danger); color: #fff; }
+        #reset-cache-btn:hover { background: var(--danger); color: #fff; }
         .main-layout {
             display: grid;
             grid-template-columns: 1fr 400px;
@@ -1410,7 +1422,7 @@ $noOpcache = !extension_loaded('Zend OPcache');
 
         <div class="actions">
             <?php if (!$readonly): ?>
-            <a href="?clear=1" id="reset-cache-link">Reset cache</a>
+            <button type="button" id="reset-cache-btn">Reset cache</button>
             <?php endif; ?>
             <button class="auto-refresh-btn" id="auto-refresh-btn">Auto-refresh</button>
             <select id="auto-refresh-interval" class="auto-refresh-select">
@@ -1920,12 +1932,24 @@ $noOpcache = !extension_loaded('Zend OPcache');
             if (e.key === 'Escape' && confirmOverlay.classList.contains('visible')) closeConfirm();
         });
 
-        // Reset cache link
-        var resetLink = document.getElementById('reset-cache-link');
-        if (resetLink) {
-            resetLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                var href = this.href;
+        // Reset cache button
+        function postAction(params) {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.style.display = 'none';
+            for (var key in params) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = params[key];
+                form.appendChild(input);
+            }
+            document.body.appendChild(form);
+            form.submit();
+        }
+        var resetBtn = document.getElementById('reset-cache-btn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function(e) {
                 showConfirm(
                     'Reset Entire OPcache',
                     '<p>This will invalidate <strong>every cached script</strong>, forcing PHP to recompile all files on next access. ' +
@@ -1933,7 +1957,7 @@ $noOpcache = !extension_loaded('Zend OPcache');
                     '<p class="confirm-warn">For a less disruptive approach, switch to the <strong>Scripts</strong> tab and ' +
                     'invalidate individual files by hovering over a row and clicking the <strong>\u00d7</strong> button on the right.</p>',
                     'Reset cache',
-                    function() { sessionStorage.removeItem('opcache-history'); location.href = href; }
+                    function() { sessionStorage.removeItem('opcache-history'); postAction({clear: '1'}); }
                 );
             });
         }
@@ -1989,7 +2013,7 @@ $noOpcache = !extension_loaded('Zend OPcache');
                                 '<p>Remove this file from the OPcache. It will be recompiled on next access.</p>' +
                                 '<div class="confirm-path">' + path.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>',
                                 'Invalidate',
-                                function() { location.href = '?invalidate=' + encodeURIComponent(path); }
+                                function() { postAction({invalidate: path}); }
                             );
                         });
                     })(s.path);
